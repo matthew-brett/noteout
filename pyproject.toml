@@ -1,0 +1,17 @@
+[build-system]
+requires = ["flit"]
+build-backend = "flit.buildapi"
+
+[tool.flit.metadata]
+module = "noteout"
+author = "Matthew Brett"
+author-email = "matthew.brett@gmail.com"
+home-page="https://github.com/matthew-brett/noteout"
+classifiers = ["License :: OSI Approved :: BSD License",
+               "Programming Language :: Python :: 3"]
+description-file="README.md"
+# Check against requirements.txt
+requires = [
+    'panflute',
+]
+requires-python=">=3.6"
