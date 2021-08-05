@@ -1,0 +1,16 @@
+---
+var1: 5
+---
+
+# A heading
+
+Some text.
+More than one line.
+
+::: {#noteout .sidebar name="My notebook"}
+Here is a paragraph.
+
+And another.
+:::
+
+End of notebook

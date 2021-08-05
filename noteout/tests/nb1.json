@@ -1,0 +1,175 @@
+{
+  "pandoc-api-version": [
+    1,
+    22
+  ],
+  "meta": {
+    "var1": {
+      "t": "MetaInlines",
+      "c": [
+        {
+          "t": "Str",
+          "c": "5"
+        }
+      ]
+    }
+  },
+  "blocks": [
+    {
+      "t": "Header",
+      "c": [
+        1,
+        [
+          "a-heading",
+          [],
+          []
+        ],
+        [
+          {
+            "t": "Str",
+            "c": "A"
+          },
+          {
+            "t": "Space"
+          },
+          {
+            "t": "Str",
+            "c": "heading"
+          }
+        ]
+      ]
+    },
+    {
+      "t": "Para",
+      "c": [
+        {
+          "t": "Str",
+          "c": "Some"
+        },
+        {
+          "t": "Space"
+        },
+        {
+          "t": "Str",
+          "c": "text."
+        },
+        {
+          "t": "SoftBreak"
+        },
+        {
+          "t": "Str",
+          "c": "More"
+        },
+        {
+          "t": "Space"
+        },
+        {
+          "t": "Str",
+          "c": "than"
+        },
+        {
+          "t": "Space"
+        },
+        {
+          "t": "Str",
+          "c": "one"
+        },
+        {
+          "t": "Space"
+        },
+        {
+          "t": "Str",
+          "c": "line."
+        }
+      ]
+    },
+    {
+      "t": "Div",
+      "c": [
+        [
+          "noteout",
+          [
+            "sidebar"
+          ],
+          [
+            [
+              "name",
+              "My notebook"
+            ]
+          ]
+        ],
+        [
+          {
+            "t": "Para",
+            "c": [
+              {
+                "t": "Str",
+                "c": "Here"
+              },
+              {
+                "t": "Space"
+              },
+              {
+                "t": "Str",
+                "c": "is"
+              },
+              {
+                "t": "Space"
+              },
+              {
+                "t": "Str",
+                "c": "a"
+              },
+              {
+                "t": "Space"
+              },
+              {
+                "t": "Str",
+                "c": "paragraph."
+              }
+            ]
+          },
+          {
+            "t": "Para",
+            "c": [
+              {
+                "t": "Str",
+                "c": "And"
+              },
+              {
+                "t": "Space"
+              },
+              {
+                "t": "Str",
+                "c": "another."
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "t": "Para",
+      "c": [
+        {
+          "t": "Str",
+          "c": "End"
+        },
+        {
+          "t": "Space"
+        },
+        {
+          "t": "Str",
+          "c": "of"
+        },
+        {
+          "t": "Space"
+        },
+        {
+          "t": "Str",
+          "c": "notebook"
+        }
+      ]
+    }
+  ]
+}
