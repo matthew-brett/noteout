@@ -7,7 +7,7 @@ drop_div_spans: ['R']
 Some text.
 More than one line.
 
-::: {#noteout .sidebar name="My notebook"}
+::: {#notebook name="my_notebook"}
 Here is a paragraph.
 
 And another.
