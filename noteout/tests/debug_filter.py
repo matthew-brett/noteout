@@ -1,11 +1,21 @@
+import os
+import os.path as op
 import json
 
 import panflute as pf
 
 
 def dump_meta(doc):
-    with open('meta.json', 'wt') as fobj:
-        json.dump(doc.get_metadata(), fobj, indent=2)
+    d = doc.get_metadata()
+    d['env'] = dict(os.environ)
+    for i in range(1000):
+        fname = f'meta_{i:03d}.json'
+        if not op.exists(fname):
+            break
+    else:
+        raise RuntimeError('Ran out of files')
+    with open(fname, 'wt') as fobj:
+        json.dump(d, fobj, indent=2)
 
 
 def action(elem, doc):
