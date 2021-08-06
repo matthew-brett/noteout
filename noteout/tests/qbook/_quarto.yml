@@ -1,0 +1,23 @@
+project:
+  type: book
+
+book:
+  title: "qbook"
+  author: "Jane Doe"
+  date: "05/08/2021"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - summary.qmd
+    - references.qmd
+
+filters:
+  - ../debug_filter.py
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreport

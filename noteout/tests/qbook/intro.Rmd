@@ -1,0 +1,16 @@
+---
+title: "My Document"
+params:
+  alpha: 0.3
+  ratio: 0.1
+---
+
+# Introduction
+
+This is a book created from markdown and executable code.
+
+See @knuth84 for additional discussion of literate programming.
+
+```{r}
+print(params$alpha)
+```
