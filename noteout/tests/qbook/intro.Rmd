@@ -12,6 +12,12 @@ See @knuth84 for additional discussion of literate programming.
 Some R stuff.
 :::
 
+::: {#notebook name="my_notebook"}
+Here is a paragraph.
+
+And another.
+:::
+
 ::: Python
 Some Python stuff.
 :::

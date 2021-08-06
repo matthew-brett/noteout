@@ -5,7 +5,16 @@ import panflute as pf
 
 
 def prepare(doc):
-    dds = doc.get_metadata('drop_div_spans', default=[])
+    dds = doc.get_metadata('drop_div_spans')
+    if dds is None:
+        dds = []
+        edition = doc.get_metadata('rsbook_edition')
+        if edition is not None:
+            edition = edition.lower()
+            if edition == 'python':
+                dds = ['R']
+            elif edition == 'r':
+                dds = ['Python']
     doc.bad_names = {dds} if isinstance(dds, str) else set(dds)
 
 

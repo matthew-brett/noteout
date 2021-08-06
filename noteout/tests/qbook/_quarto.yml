@@ -11,11 +11,10 @@ book:
     - summary.qmd
     - references.qmd
 
-drop_div_spans: ['Python']
-
 filters:
   - quarto
   - ../../drop_div_spans.py
+  - ../../write_notebooks.py
 
 bibliography: references.bib
 
@@ -24,3 +23,5 @@ format:
     theme: cosmo
   pdf:
     documentclass: scrreport
+
+rsbook_edition: R
