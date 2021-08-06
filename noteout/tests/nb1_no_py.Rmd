@@ -1,5 +1,5 @@
 ---
-drop_div_spans: ['R']
+drop_div_spans: ['Python']
 ---
 
 # A heading
@@ -21,10 +21,6 @@ This is a block for the R version.
 
 On the other hand:
 
-::: Python
-This is a block for the Python version.
-:::
-
-The text continues; [This is *some text*]{#R}[More text]{#Python}.  Continues.
+The text continues; [This is *some text*]{#R}.  Continues.
 
 End of notebook

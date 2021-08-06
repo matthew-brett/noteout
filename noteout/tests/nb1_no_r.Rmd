@@ -15,16 +15,12 @@ And another.
 
 More text.
 
-::: R
-This is a block for the R version.
-:::
-
 On the other hand:
 
 ::: Python
 This is a block for the Python version.
 :::
 
-The text continues; [This is *some text*]{#R}[More text]{#Python}.  Continues.
+The text continues; [More text]{#Python}. Continues.
 
 End of notebook
