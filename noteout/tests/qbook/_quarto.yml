@@ -11,8 +11,11 @@ book:
     - summary.qmd
     - references.qmd
 
+drop_div_spans: ['Python']
+
 filters:
-  - ../debug_filter.py
+  - quarto
+  - ../../drop_div_spans.py
 
 bibliography: references.bib
 
