@@ -4,18 +4,23 @@
 import panflute as pf
 
 
-def prepare(doc):
+def get_bad_names(doc):
     dds = doc.get_metadata('drop_div_spans')
-    if dds is None:
-        dds = []
-        edition = doc.get_metadata('rsbook_edition')
-        if edition is not None:
-            edition = edition.lower()
-            if edition == 'python':
-                dds = ['R']
-            elif edition == 'r':
-                dds = ['Python']
-    doc.bad_names = {dds} if isinstance(dds, str) else set(dds)
+    if dds is not None:
+        return {dds} if isinstance(dds, str) else set(dds)
+    edition = doc.get_metadata('_quarto_vars.edition')
+    if edition is None:
+        return set()
+    edition = edition.lower()
+    if edition == 'python':
+        return {'R'}
+    elif edition == 'r':
+        return {'Python'}
+    return set()
+
+
+def prepare(doc):
+    doc.bad_names = get_bad_names(doc)
 
 
 def action(elem, doc):

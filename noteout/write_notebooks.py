@@ -43,10 +43,9 @@ def text2nb_text(nb_text, out_fmt):
 def write_notebook(name, content, doc):
     out_sdir = doc.get_metadata('nb_out_dir')
     out_root = doc.get_metadata('project.output-dir', '.')
-    edition = doc.get_metadata('rsbook_edition', default='python')
     if out_sdir is not None and not op.isdir(out_sdir):
         os.makedirs(out_sdir)
-    out_fmt = FMT_RECODES[edition]
+    out_fmt = FMT_RECODES[doc.edition]
     out_base = f"{name}.{out_fmt}"
     if out_sdir:
         out_base = op.join(out_sdir, out_base)
@@ -61,7 +60,8 @@ def write_notebook(name, content, doc):
 
 
 def prepare(doc):
-    pass
+    edition = doc.get_metadata('_quarto_vars.edition')
+    doc.edition = edition.lower() if edition else None
 
 
 def action(elem, doc):
@@ -76,11 +76,10 @@ def action(elem, doc):
     header = pf.convert_text(f'Start of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
-    edition = doc.get_metadata('rsbook_edition', default='python').lower()
     binder_url = doc.get_metadata('binder_url', default=DEFAULT_BINDER)
     interact_bit = ('<a class="interact-button" '
                     f'href="{binder_url}{nb_path}">Interact</a>'
-                    if edition == 'python' else '')
+                    if doc.edition == 'python' else '')
     header.append(pf.RawBlock(
         f"""\
         <div class="nb-links">
@@ -97,7 +96,7 @@ def action(elem, doc):
 
 
 def finalize(doc):
-    pass
+    del doc.edition
 
 
 def main(doc=None):
