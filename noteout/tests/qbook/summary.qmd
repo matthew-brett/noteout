@@ -1,3 +1,14 @@
 # Summary
 
 In summary, this book has no content whatsoever.
+
+
+```{python}
+import pandas as pd
+df = pd.read_csv('lough_erne.csv')
+df
+```
+
+```{python}
+df.plot.scatter(x='TP', y='SRP')
+```

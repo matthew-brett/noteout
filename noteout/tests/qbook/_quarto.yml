@@ -12,8 +12,9 @@ book:
     - references.qmd
 
 filters:
-  - quarto
   - ../../drop_div_spans.py
+  - quarto
+  - ../debug_filter.py
   - ../../write_notebooks.py
 
 bibliography: references.bib
@@ -24,4 +25,4 @@ format:
   pdf:
     documentclass: scrreport
 
-rsbook_edition: R
+rsbook_edition: Python
