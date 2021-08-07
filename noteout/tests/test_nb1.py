@@ -8,6 +8,7 @@ from io import StringIO
 import panflute as pf
 
 import noteout.drop_div_spans as ndds
+import noteout.write_notebooks as nwnbs
 
 DATA_DIR = Path(__file__).parent
 
@@ -19,11 +20,11 @@ def get_contents(file_like):
     return file_like.read()
 
 
-def read_md(pth):
+def read_md(pth, output_format='panflute'):
     markdown_text = get_contents(pth)
     return pf.convert_text(markdown_text,
                            input_format='markdown',
-                           output_format='panflute',
+                           output_format=output_format,
                            standalone=True)
 
 
@@ -40,7 +41,7 @@ def filter_me(doc, filt_mod):
     return copied
 
 
-def test_nb1():
+def test_nb1_strip():
     pth = DATA_DIR.joinpath('nb1.Rmd')
     contents = get_contents(pth)
     doc = read_md(StringIO(contents))
@@ -61,3 +62,16 @@ def test_nb1():
     doc_no_drop = read_md(StringIO(contents_no_drop))
     filtered_not = filter_me(doc_no_drop, ndds)
     assert_doc_equal(doc_no_drop, filtered_not)
+
+
+def test_nb1_notebook():
+    pth = DATA_DIR.joinpath('nb1.Rmd')
+    contents = get_contents(pth)
+    doc = read_md(StringIO(contents))
+    nb_filtered = filter_me(doc, nwnbs)
+    actual = pf.convert_text(nb_filtered,
+                             input_format='panflute',
+                             output_format='markdown')
+    expected = read_md(DATA_DIR.joinpath('nb1_nb_links.Rmd'),
+                       output_format='markdown')
+    assert actual == expected

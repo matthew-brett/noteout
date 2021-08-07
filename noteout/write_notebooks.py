@@ -19,6 +19,9 @@ FMT_RECODES = {'r': 'Rmd',
                'python': 'ipynb',
                'Python': 'ipynb'}
 
+DEFAULT_BINDER = ('https://mybinder.org/v2/gh/resampling-stats/'
+                  'resampling-with/gh-pages?filepath=python-book/')
+
 
 def proc_text(nb_text):
     """ Process notebook GFM markdown
@@ -37,6 +40,26 @@ def text2nb_text(nb_text, out_fmt):
     return jpt.writes(jpt.reads(txt, 'Rmd'), out_fmt)
 
 
+def write_notebook(name, content, doc):
+    out_sdir = doc.get_metadata('nb_out_dir')
+    out_root = doc.get_metadata('project.output-dir', '.')
+    edition = doc.get_metadata('rsbook_edition', default='python')
+    if out_sdir is not None and not op.isdir(out_sdir):
+        os.makedirs(out_sdir)
+    out_fmt = FMT_RECODES[edition]
+    out_base = f"{name}.{out_fmt}"
+    if out_sdir:
+        out_base = op.join(out_sdir, out_base)
+    nb_md = pf.convert_text(content,
+                            input_format='panflute',
+                            output_format='gfm',
+                            standalone=True)
+    out_fname = op.join(out_root, out_base)
+    with open(out_fname, 'wt') as fobj:
+        fobj.write(text2nb_text(nb_md, out_fmt))
+    return out_base
+
+
 def prepare(doc):
     pass
 
@@ -46,20 +69,31 @@ def action(elem, doc):
         return
     if not elem.identifier == 'notebook':
         return
-    if not 'name' in elem.attributes:
+    name = elem.attributes.get('name')
+    if name is None:
         raise RuntimeError('Need name attribute for notebook')
-    out_sdir = doc.get_metadata('nb_out_dir', default='notebooks')
-    edition = doc.get_metadata('rsbook_edition', default='python')
-    if not op.isdir(out_sdir):
-        os.mkdir(out_sdir)
-    out_fmt = FMT_RECODES[edition]
-    out_fname = f"{out_sdir}{op.sep}{elem.attributes['name']}.{out_fmt}"
-    nb_md = pf.convert_text(elem.content,
-                            input_format='panflute',
-                            output_format='gfm',
-                            standalone=True)
-    with open(out_fname, 'wt') as fobj:
-        fobj.write(text2nb_text(nb_md, out_fmt))
+    nb_path = write_notebook(name, elem.content, doc)
+    header = pf.convert_text(f'Start of `{name}` notebook',
+                             input_format='markdown',
+                             output_format='panflute')
+    edition = doc.get_metadata('rsbook_edition', default='python').lower()
+    binder_url = doc.get_metadata('binder_url', default=DEFAULT_BINDER)
+    interact_bit = ('<a class="interact-button" '
+                    f'href="{binder_url}{nb_path}">Interact</a>'
+                    if edition == 'python' else '')
+    header.append(pf.RawBlock(
+        f"""\
+        <div class="nb-links">
+        <a class="notebook-link" href={nb_path}>Download notebook</a>
+        {interact_bit}
+        </p>
+        </div>
+        """))
+    footer = pf.convert_text(f'End of `{name}` notebook',
+                             input_format='markdown',
+                             output_format='panflute')
+    elem.content = header + list(elem.content) + footer
+    return elem
 
 
 def finalize(doc):
