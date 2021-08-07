@@ -60,7 +60,7 @@ def write_notebook(name, content, doc):
 
 
 def prepare(doc):
-    edition = doc.get_metadata('_quarto_vars.edition')
+    edition = doc.get_metadata('_quarto-vars.edition')
     doc.edition = edition.lower() if edition else None
 
 

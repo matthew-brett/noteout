@@ -68,6 +68,8 @@ def test_nb1_notebook():
     pth = DATA_DIR.joinpath('nb1.Rmd')
     contents = get_contents(pth)
     doc = read_md(StringIO(contents))
+    # Simulate _variables.yml file read
+    doc.metadata['_quarto-vars'] = {'edition': 'python'}
     nb_filtered = filter_me(doc, nwnbs)
     actual = pf.convert_text(nb_filtered,
                              input_format='panflute',
