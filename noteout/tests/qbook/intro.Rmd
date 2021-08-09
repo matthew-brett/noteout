@@ -12,7 +12,7 @@ See @knuth84 for additional discussion of literate programming.
 Some R stuff.
 :::
 
-::: {#notebook name="my_notebook"}
+::: {.notebook name="my_notebook"}
 Here is a paragraph.
 
 And another.
@@ -22,4 +22,4 @@ And another.
 Some Python stuff.
 :::
 
-Use [`sample(1:10)`]{#R}[`np.random.permutation(np.arange(10))`]{#Python}.
+Use [`sample(1:10)`]{.R}[`np.random.permutation(np.arange(10))`]{.Python}.
