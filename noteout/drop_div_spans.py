@@ -25,8 +25,7 @@ def prepare(doc):
 
 def action(elem, doc):
     bad_names = doc.bad_names
-    if isinstance(elem, (pf.Div, pf.Span)) and (
-        elem.identifier in bad_names or
+    if (isinstance(elem, (pf.Div, pf.Span)) and
         bad_names.intersection(elem.classes)):
         return []
 

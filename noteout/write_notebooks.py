@@ -67,7 +67,7 @@ def prepare(doc):
 def action(elem, doc):
     if not isinstance(elem, pf.Div):
         return
-    if not elem.identifier == 'notebook':
+    if not 'notebook' in elem.classes:
         return
     name = elem.attributes.get('name')
     if name is None:
@@ -82,12 +82,12 @@ def action(elem, doc):
                     if doc.edition == 'python' else '')
     header.append(pf.RawBlock(
         f"""\
-        <div class="nb-links">
-        <a class="notebook-link" href={nb_path}>Download notebook</a>
-        {interact_bit}
-        </p>
-        </div>
-        """))
+<div class="nb-links">
+<a class="notebook-link" href={nb_path}>Download notebook</a>
+{interact_bit}
+</p>
+</div>
+"""))
     footer = pf.convert_text(f'End of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')

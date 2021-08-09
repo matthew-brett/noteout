@@ -7,7 +7,7 @@ drop_div_spans: ['R']
 Some text.
 More than one line.
 
-::: {#notebook name="my_notebook"}
+::: {.notebook name="first_notebook"}
 Here is a paragraph.
 
 And another.
@@ -15,12 +15,22 @@ And another.
 
 More text.
 
+Some thoughts.
+
 On the other hand:
 
 ::: Python
 This is a block for the Python version.
 :::
 
-The text continues; [More text]{#Python}. Continues.
+The text continues; [More text]{.Python}. Continues.
 
-End of notebook
+Then we write: .
+
+::: {.notebook name="second_notebook"}
+Here, again, is a paragraph.
+
+And, again, another.
+:::
+
+End of page.
