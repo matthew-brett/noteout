@@ -73,12 +73,13 @@ def test_nb1_strip():
     assert_doc_equal(doc_no_drop, filtered_not)
 
 
-def test_nb1_notebook():
+def test_nb1_notebook(tmp_path):
     pth = DATA_DIR.joinpath('nb1.Rmd')
     contents = get_contents(pth)
     doc = read_md(StringIO(contents))
     # Simulate _variables.yml file read
     doc.metadata['_quarto-vars'] = {'edition': 'python'}
+    doc.metadata['output-dir'] = str(tmp_path)
     nb_filtered = filter_me(doc, nwnbs)
     actual = pf.convert_text(nb_filtered,
                              input_format='panflute',
