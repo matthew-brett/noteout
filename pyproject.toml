@@ -13,5 +13,11 @@ description-file="README.md"
 # Check against requirements.txt
 requires = [
     'panflute',
+    'jupytext',
 ]
 requires-python=">=3.6"
+
+[tool.flit.scripts]
+noteout-filter-divspans = "noteout.filter_divspans:main"
+noteout-write-notebooks = "noteout.write_notebooks:main"
+noteout-write-meta = "noteout.write_meta:main"

@@ -12,10 +12,10 @@ book:
     - references.qmd
 
 filters:
-  - ../../drop_div_spans.py
+  - noteout-filter-divspans
   - quarto
-  - ../debug_filter.py
-  - ../../write_notebooks.py
+  - noteout-write-meta
+  - noteout-write-notebooks
 
 bibliography: references.bib
 

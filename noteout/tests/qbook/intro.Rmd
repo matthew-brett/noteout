@@ -22,4 +22,10 @@ And another.
 Some Python stuff.
 :::
 
+then
+
+::: R
+Some R stuff
+:::
+
 Use [`sample(1:10)`]{.R}[`np.random.permutation(np.arange(10))`]{.Python}.

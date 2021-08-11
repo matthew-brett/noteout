@@ -7,10 +7,18 @@ from io import StringIO
 
 import panflute as pf
 
-import noteout.drop_div_spans as ndds
+import noteout.filter_divspans as nfds
 import noteout.write_notebooks as nwnbs
 
 DATA_DIR = Path(__file__).parent
+
+
+def _dump_json(d, fname):
+    """ Function for interactive debugging
+    """
+    import json
+    with open(fname, 'wt') as fobj:
+        json.dump(d, fobj, indent=2)
 
 
 def get_contents(file_like):
@@ -46,21 +54,22 @@ def test_nb1_strip():
     contents = get_contents(pth)
     doc = read_md(StringIO(contents))
 
-    filtered_r = filter_me(doc, ndds)
+    filtered_r = filter_me(doc, nfds)
     doc_no_r = read_md(DATA_DIR.joinpath('nb1_no_r.Rmd'))
     assert_doc_equal(filtered_r, doc_no_r)
-    drop_spec = "drop_div_spans: ['R']"
+    drop_spec = "filter_divspans: ['R']"
     # Filter Python instead.
-    contents_no_py = contents.replace(drop_spec,
-                                      "drop_div_spans: ['Python']")
+    contents_no_py = contents.replace(
+        drop_spec,
+        "filter_divspans: ['Python']")
     doc_no_py = read_md(StringIO(contents_no_py))
-    filtered_py = filter_me(doc_no_py, ndds)
+    filtered_py = filter_me(doc_no_py, nfds)
     doc_no_py = read_md(DATA_DIR.joinpath('nb1_no_py.Rmd'))
     assert_doc_equal(doc_no_py, filtered_py)
     # No filtering section - contents unchanged.
     contents_no_drop = contents.replace(drop_spec, '')
     doc_no_drop = read_md(StringIO(contents_no_drop))
-    filtered_not = filter_me(doc_no_drop, ndds)
+    filtered_not = filter_me(doc_no_drop, nfds)
     assert_doc_equal(doc_no_drop, filtered_not)
 
 

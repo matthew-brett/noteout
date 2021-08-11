@@ -1,5 +1,5 @@
 ---
-drop_div_spans: ['Python']
+filter_divspans: ['Python']
 ---
 
 # A heading

@@ -5,7 +5,7 @@ import panflute as pf
 
 
 def get_bad_names(doc):
-    dds = doc.get_metadata('drop_div_spans')
+    dds = doc.get_metadata('filter_divspans')
     if dds is not None:
         return {dds} if isinstance(dds, str) else set(dds)
     edition = doc.get_metadata('_quarto-vars.edition')

@@ -1,5 +1,5 @@
 ---
-drop_div_spans: ['R']
+filter_divspans: ['R']
 ---
 
 # A heading
