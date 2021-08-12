@@ -21,26 +21,26 @@ End of `first_notebook` notebook
 
 More text.
 
-::: R
+::: r
 This is a block for the R version.
 :::
 
 Some thoughts.
 
-::: R
+::: r
 This is another block for the R version.
 :::
 
 On the other hand:
 
-::: Python
+::: python
 This is a block for the Python version.
 :::
 
-The text continues; [This is *some text*]{.R}[More text]{.Python}.
+The text continues; [This is *some text*]{.r}[More text]{.python}.
 Continues.
 
-Then we write: [more R]{.R}.
+Then we write: [more R]{.r}.
 
 ::: {.notebook name="second_notebook"}
 Start of `second_notebook` notebook

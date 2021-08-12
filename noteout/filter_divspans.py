@@ -5,17 +5,9 @@ import panflute as pf
 
 
 def get_bad_names(doc):
-    dds = doc.get_metadata('filter_divspans')
+    dds = doc.get_metadata('noteout.filter_divspans')
     if dds is not None:
         return {dds} if isinstance(dds, str) else set(dds)
-    edition = doc.get_metadata('_quarto-vars.edition')
-    if edition is None:
-        return set()
-    edition = edition.lower()
-    if edition == 'python':
-        return {'R'}
-    elif edition == 'r':
-        return {'Python'}
     return set()
 
 
@@ -31,6 +23,7 @@ def action(elem, doc):
 
 
 def finalize(doc):
+    return
     del doc.bad_names
 
 

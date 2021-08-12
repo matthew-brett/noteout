@@ -1,7 +1,3 @@
----
-filter_divspans: ['Python']
----
-
 # A heading
 
 Some text.
@@ -15,21 +11,21 @@ And another.
 
 More text.
 
-::: R
+::: r
 This is a block for the R version.
 :::
 
 Some thoughts.
 
-::: R
+::: r
 This is another block for the R version.
 :::
 
 On the other hand:
 
-The text continues; [This is *some text*]{.R}.  Continues.
+The text continues; [This is *some text*]{.r}.  Continues.
 
-Then we write: [more R]{.R}.
+Then we write: [more R]{.r}.
 
 ::: {.notebook name="second_notebook"}
 Here, again, is a paragraph.

@@ -1,7 +1,3 @@
----
-filter_divspans: ['R']
----
-
 # A heading
 
 Some text.
@@ -19,11 +15,11 @@ Some thoughts.
 
 On the other hand:
 
-::: Python
+::: python
 This is a block for the Python version.
 :::
 
-The text continues; [More text]{.Python}. Continues.
+The text continues; [More text]{.python}. Continues.
 
 Then we write: .
 
