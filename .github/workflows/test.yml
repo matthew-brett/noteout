@@ -22,6 +22,14 @@ jobs:
             ~/.local
           key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('test-requirements.txt') }}
 
+      - name: Install R
+        run: |
+          sudo apt install -y r-base
+
+      - name: Install R packages
+        run: |
+          Rscript -e 'install.packages(c("quarto", "reticulate"))'
+
       - name: Install pandoc
         run: |
           sudo apt install -y curl
