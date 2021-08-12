@@ -24,11 +24,12 @@ jobs:
 
       - name: Install pandoc
         run: |
-          sudo apt install -y pandoc
+          sudo apt install -y curl
+          curl -LO https://github.com/jgm/pandoc/releases/download/2.14.1/pandoc-2.14.1-1-amd64.deb
+          sudo dpkg --install pandoc-2.14.1-1-amd64.deb
 
       - name: Install quarto
         run: |
-          sudo apt install -y curl
           curl -LO https://github.com/quarto-dev/quarto-cli/releases/download/v0.2.62/quarto-0.2.62-amd64.deb
           sudo dpkg --install quarto-0.2.62-amd64.deb
 
