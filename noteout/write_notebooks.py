@@ -79,14 +79,13 @@ def action(elem, doc):
                              output_format='panflute')
     binder_url = doc.get_metadata('binder_url', default=DEFAULT_BINDER)
     interact_bit = ('<a class="interact-button" '
-                    f'href="{binder_url}{nb_path}">Interact</a>'
+                    f'href="{binder_url}{nb_path}">Interact</a>\n'
                     if doc.edition == 'python' else '')
     header.append(pf.RawBlock(
         f"""\
 <div class="nb-links">
 <a class="notebook-link" href={nb_path}>Download notebook</a>
-{interact_bit}
-</p>
+{interact_bit}</p>
 </div>
 """))
     footer = pf.convert_text(f'End of `{name}` notebook',
