@@ -79,7 +79,7 @@ def test_nb1_notebook(tmp_path):
     doc = read_md(StringIO(contents))
     # Simulate _variables.yml file read
     doc.metadata['_quarto-vars'] = {'edition': 'python'}
-    doc.metadata['output-dir'] = str(tmp_path)
+    doc.metadata['project'] = {'output-dir': str(tmp_path)}
     nb_filtered = filter_me(doc, nwnbs)
     actual = pf.convert_text(nb_filtered,
                              input_format='panflute',

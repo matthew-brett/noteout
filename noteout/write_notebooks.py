@@ -41,22 +41,23 @@ def text2nb_text(nb_text, out_fmt):
 
 
 def write_notebook(name, content, doc):
-    out_sdir = doc.get_metadata('nb_out_dir')
-    out_root = doc.get_metadata('project.output-dir', '.')
-    if out_sdir is not None and not op.isdir(out_sdir):
-        os.makedirs(out_sdir)
+    out_root = doc.get_metadata('project.output-dir')
+    out_sdir = doc.get_metadata('noteout.nb-sdir')
     out_fmt = FMT_RECODES[doc.edition]
-    out_base = f"{name}.{out_fmt}"
-    if out_sdir:
-        out_base = op.join(out_sdir, out_base)
+    parts = [out_root, out_sdir,  f"{name}.{out_fmt}"]
+    out_fname = op.join(*[p for p in parts if p])
+    out_dir = op.basename(out_fname)
+    if not op.isdir(out_dir):
+        os.makedirs(out_dir)
     nb_md = pf.convert_text(content,
                             input_format='panflute',
                             output_format='gfm',
                             standalone=True)
-    out_fname = op.join(out_root, out_base)
     with open(out_fname, 'wt') as fobj:
         fobj.write(text2nb_text(nb_md, out_fmt))
-    return out_base
+    # Return path relative to out_froot
+    return (out_fname if out_root is None else
+            op.relpath(out_fname, out_root))
 
 
 def prepare(doc):
