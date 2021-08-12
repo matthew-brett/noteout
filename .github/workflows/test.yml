@@ -28,7 +28,7 @@ jobs:
 
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("quarto", "reticulate"))'
+          sudo Rscript -e 'install.packages(c("quarto", "reticulate"))'
 
       - name: Install pandoc
         run: |
