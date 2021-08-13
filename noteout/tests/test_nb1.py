@@ -13,6 +13,8 @@ import noteout.write_notebooks as nwnbs
 
 from .tutils import (read_md, assert_json_equal, filter_doc, in_tmp_path)
 
+import pytest
+
 DATA_DIR = Path(__file__).parent
 
 
@@ -62,59 +64,58 @@ def test_nb1_notebook(tmp_path):
         assert nb2.exists()
 
 
-NB1_DOC = read_md(DATA_DIR.joinpath('nb1.Rmd'))
-NB1_DOC.metadata['noteout'] = {'nb-format': 'ipynb'}
 NB_NAMES = ('first_notebook.ipynb', 'second_notebook.ipynb')
 
+@pytest.fixture
+def nb1_doc():
+    nb1_doc = read_md(DATA_DIR.joinpath('nb1.Rmd'))
+    nb1_doc.metadata['noteout'] = {'nb-format': 'ipynb'}
+    return nb1_doc
 
-def test_nb1_out_path(in_tmp_path):
-    d_bare = deepcopy(NB1_DOC)
+
+def test_nb1_out_path(in_tmp_path, nb1_doc):
     # No output directory, built at working directory.
-    filter_doc(d_bare, nwnbs)
+    filter_doc(nb1_doc, nwnbs)
     for nb_name in NB_NAMES:
         assert op.exists(nb_name)
         assert (in_tmp_path / nb_name).exists()
 
 
-def test_nb1_proj_path(in_tmp_path):
+def test_nb1_proj_path(in_tmp_path, nb1_doc):
     # Set project output path (relative), use that.
-    doc = deepcopy(NB1_DOC)
-    doc.metadata['project'] = {'output-dir': 'test_book'}
-    filter_doc(doc, nwnbs)
+    nb1_doc.metadata['project'] = {'output-dir': 'test_book'}
+    filter_doc(nb1_doc, nwnbs)
     for nb_name in NB_NAMES:
         assert op.exists(op.join('test_book', nb_name))
         assert (in_tmp_path / 'test_book' / nb_name).exists()
 
 
-def test_nb1_sdir(in_tmp_path):
-    doc = deepcopy(NB1_DOC)
+def test_nb1_sdir(in_tmp_path, nb1_doc):
     # Set notebook subdirectory, use that.
-    doc.metadata['noteout']['nb-dir'] = 'nb_directory'
-    filter_doc(doc, nwnbs)
+    nb1_doc.metadata['noteout']['nb-dir'] = 'nb_directory'
+    filter_doc(nb1_doc, nwnbs)
     for nb_name in NB_NAMES:
         assert op.exists(op.join('nb_directory', nb_name))
         assert (in_tmp_path / 'nb_directory' / nb_name).exists()
 
 
-def test_nb1_proj_and_sdir(in_tmp_path):
-    doc = deepcopy(NB1_DOC)
+def test_nb1_proj_and_sdir(in_tmp_path, nb1_doc):
     # Set both project and subdirectory.
-    doc.metadata['project'] = {'output-dir': 'test_book'}
-    doc.metadata['noteout']['nb-dir'] = 'nb_directory'
-    filter_doc(doc, nwnbs)
+    nb1_doc.metadata['project'] = {'output-dir': 'test_book'}
+    nb1_doc.metadata['noteout']['nb-dir'] = 'nb_directory'
+    filter_doc(nb1_doc, nwnbs)
     for nb_name in NB_NAMES:
         assert op.exists(op.join('test_book', 'nb_directory', nb_name))
         assert (in_tmp_path / 'test_book' / 'nb_directory' / nb_name).exists()
 
 
-def test_nb1_sdir_overrides(in_tmp_path, tmp_path):
-    doc = deepcopy(NB1_DOC)
+def test_nb1_sdir_overrides(in_tmp_path, tmp_path, nb1_doc):
     # Set both project and subdirectory.
-    doc.metadata['project'] = {'output-dir': 'test_book'}
+    nb1_doc.metadata['project'] = {'output-dir': 'test_book'}
     # Subdirectory is absolute path.
     # Subdirectory overrides project directory.
-    doc.metadata['noteout']['nb-dir'] = str(tmp_path)
-    filter_doc(doc, nwnbs)
+    nb1_doc.metadata['noteout']['nb-dir'] = op.abspath(tmp_path)
+    filter_doc(nb1_doc, nwnbs)
     for nb_name in NB_NAMES:
         assert not op.exists(op.join('test_book', nb_name))
         assert (tmp_path / nb_name).exists()
