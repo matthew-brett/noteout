@@ -38,7 +38,7 @@ def write_notebook(name, content, doc):
     out_fmt = doc.nb_format
     parts = [out_root, out_sdir,  f"{name}.{out_fmt}"]
     out_fname = op.join(*[p for p in parts if p])
-    out_dir = op.basename(out_fname)
+    out_dir = op.dirname(out_fname)
     if not op.isdir(out_dir):
         os.makedirs(out_dir)
     nb_md = pf.convert_text(content,
