@@ -9,7 +9,6 @@ Start of `first_notebook` notebook
 <div class="nb-links">
 <a class="notebook-link" href=first_notebook.ipynb>Download notebook</a>
 <a class="interact-button" href="https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/first_notebook.ipynb">Interact</a>
-</p>
 </div>
 ```
 
@@ -50,7 +49,6 @@ Start of `second_notebook` notebook
 <div class="nb-links">
 <a class="notebook-link" href=second_notebook.ipynb>Download notebook</a>
 <a class="interact-button" href="https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/second_notebook.ipynb">Interact</a>
-</p>
 </div>
 ```
 

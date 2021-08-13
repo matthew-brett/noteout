@@ -8,7 +8,6 @@ Start of `first_notebook` notebook
 ```{=html}
 <div class="nb-links">
 <a class="notebook-link" href=first_notebook.Rmd>Download notebook</a>
-</p>
 </div>
 ```
 
@@ -48,7 +47,6 @@ Start of `second_notebook` notebook
 ```{=html}
 <div class="nb-links">
 <a class="notebook-link" href=second_notebook.Rmd>Download notebook</a>
-</p>
 </div>
 ```
 

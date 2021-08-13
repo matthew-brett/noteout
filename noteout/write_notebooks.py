@@ -14,9 +14,6 @@ FENCE_START_RE = re.compile(r'^```\s*(\w+)$', re.MULTILINE)
 # Stuff inside HTML (and Markdown) comment markers.
 COMMENT_RE = re.compile(r'<!--.*?-->', re.MULTILINE | re.DOTALL)
 
-DEFAULT_BINDER = ('https://mybinder.org/v2/gh/resampling-stats/'
-                  'resampling-with/gh-pages?filepath=python-book/')
-
 
 def proc_text(nb_text):
     """ Process notebook GFM markdown
@@ -71,16 +68,17 @@ def action(elem, doc):
     header = pf.convert_text(f'Start of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
-    binder_url = doc.get_metadata('binder_url', default=DEFAULT_BINDER)
-    interact_bit = ('<a class="interact-button" '
-                    f'href="{binder_url}{nb_path}">Interact</a>\n'
-                    if doc.nb_format == 'ipynb' else '')
+    interact_links = ''
+    binder_url = doc.get_metadata('noteout.binder-url')
+    if binder_url:
+        interact_links = (
+            '<a class="interact-button" '
+            f'href="{binder_url}{nb_path}">Interact</a>\n')
     header.append(pf.RawBlock(
         f"""\
 <div class="nb-links">
 <a class="notebook-link" href={nb_path}>Download notebook</a>
-{interact_bit}</p>
-</div>
+{interact_links}</div>
 """))
     footer = pf.convert_text(f'End of `{name}` notebook',
                              input_format='markdown',

@@ -80,6 +80,10 @@ def test_nb1_notebook(tmp_path):
                             ('r', 'Rmd')):
         doc.metadata['noteout'] = {'nb-format': nb_format}
         doc.metadata['project'] = {'output-dir': str(tmp_path)}
+        if nb_format == 'ipynb':
+            doc.metadata['noteout']['binder-url'] = (
+                'https://mybinder.org/v2/gh/resampling-stats/'
+                'resampling-with/gh-pages?filepath=python-book/')
         nb_filtered = filter_me(doc, nwnbs)
         actual = pf.convert_text(nb_filtered,
                                 input_format='panflute',
