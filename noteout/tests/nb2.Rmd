@@ -1,0 +1,9 @@
+# Interesting heading
+
+Initial text.
+
+::: {.notebook name=nb_primero title="The first notebook"}
+Some notebook text.
+:::
+
+End this page.
