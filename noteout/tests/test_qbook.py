@@ -25,7 +25,7 @@ def test_qbook_render(tmp_path):
         copytree(QBOOK_PATH, tmp_qbook)
         out_yml = deepcopy(in_yml)
         out_yml['noteout'] = {
-            'filter-divspans': ['python'] if lang == 'r' else ['python'],
+            'filter-divspans': ['python'] if lang == 'r' else ['r'],
             'nb-format': exp_ext}
         if lang == 'python':
             out_yml['binder-url'] = (
