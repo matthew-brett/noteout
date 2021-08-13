@@ -8,6 +8,7 @@ from shutil import copytree
 from copy import deepcopy
 
 import yaml
+import jupytext
 
 QBOOK_PATH = Path(__file__).parent.joinpath('qbook')
 
@@ -37,7 +38,15 @@ def test_qbook_render(tmp_path):
         source_listing = listdir(tmp_qbook)
         assert metas <= set(source_listing)
         # Check book generation.
-        generated = listdir(tmp_qbook / '_book')
+        book_dir = tmp_qbook / '_book'
+        gen_nb_fname = 'my_notebook.' + exp_ext
         assert set(['index.html',
-                    'my_notebook.' + exp_ext,
-                    'intro.html']) <= set(generated)
+                    gen_nb_fname,
+                    'intro.html']) <= set(listdir(book_dir))
+        with open(book_dir / 'intro.html', 'rt') as fobj:
+            intro_contents = fobj.read()
+        nb_only_str = 'This appears only in the notebook'
+        assert nb_only_str not in intro_contents
+        nb = jupytext.read(book_dir / gen_nb_fname)
+        assert len(nb.cells) == 1
+        assert nb_only_str in nb.cells[0]['source']

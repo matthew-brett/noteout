@@ -15,6 +15,11 @@ Some R stuff.
 ::: {.notebook name="my_notebook"}
 Here is a paragraph.
 
+::: nb-only
+
+This appears only in the notebook
+:::
+
 And another.
 :::
 

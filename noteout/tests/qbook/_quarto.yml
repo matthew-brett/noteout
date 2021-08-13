@@ -16,6 +16,7 @@ filters:
   - quarto
   - noteout-write-meta
   - noteout-write-notebooks
+  - noteout-filter-nb-only
 
 bibliography: references.bib
 
