@@ -32,7 +32,11 @@ def text2nb_text(nb_text, out_fmt):
     return jpt.writes(jpt.reads(txt, 'Rmd'), out_fmt)
 
 
-def write_notebook(name, content, doc):
+def name2title(name):
+    return name.replace('_', ' ').capitalize()
+
+
+def write_notebook(name, elem, doc):
     out_root = doc.get_metadata('project.output-dir')
     out_sdir = doc.get_metadata('noteout.nb-dir')
     out_fmt = doc.nb_format
@@ -41,10 +45,12 @@ def write_notebook(name, content, doc):
     out_dir = op.dirname(out_fname)
     if out_dir and not op.isdir(out_dir):
         os.makedirs(out_dir)
-    nb_md = pf.convert_text(content,
-                            input_format='panflute',
-                            output_format='gfm',
-                            standalone=True)
+    title = elem.attributes.get('title', name2title(name))
+    nb_md = f'# {title}\n\n\n' + pf.convert_text(
+        elem.content,
+        input_format='panflute',
+        output_format='gfm',
+        standalone=True)
     with open(out_fname, 'wt') as fobj:
         fobj.write(text2nb_text(nb_md, out_fmt))
     # Return path relative to out_froot
@@ -64,7 +70,7 @@ def action(elem, doc):
     name = elem.attributes.get('name')
     if name is None:
         raise RuntimeError('Need name attribute for notebook')
-    nb_path = write_notebook(name, elem.content, doc)
+    nb_path = write_notebook(name, elem, doc)
     header = pf.convert_text(f'Start of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
