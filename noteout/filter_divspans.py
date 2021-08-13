@@ -5,7 +5,7 @@ import panflute as pf
 
 
 def get_bad_names(doc):
-    dds = doc.get_metadata('noteout.filter_divspans')
+    dds = doc.get_metadata('noteout.filter-divspans')
     if dds is not None:
         return {dds} if isinstance(dds, str) else set(dds)
     return set()

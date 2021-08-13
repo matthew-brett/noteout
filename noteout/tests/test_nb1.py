@@ -31,13 +31,13 @@ def test_nb1_strip(nb1_doc):
     assert_json_equal(nb1_doc, filtered_not)
     # Filter out R sections
     doc_dont_r = deepcopy(nb1_doc)
-    doc_dont_r.metadata['noteout'] = {"filter_divspans": ['r']}
+    doc_dont_r.metadata['noteout'] = {"filter-divspans": ['r']}
     filtered_r = filter_doc(doc_dont_r, nfds)
     doc_no_r = read_md(DATA_DIR.joinpath('nb1_no_r.Rmd'))
     assert_json_equal(filtered_r, doc_no_r)
     # Filter Python instead.
     doc_dont_py = deepcopy(nb1_doc)
-    doc_dont_py.metadata['noteout'] = {"filter_divspans": ['python']}
+    doc_dont_py.metadata['noteout'] = {"filter-divspans": ['python']}
     filtered_py = filter_doc(doc_dont_py, nfds)
     doc_no_py = read_md(DATA_DIR.joinpath('nb1_no_py.Rmd'))
     assert_json_equal(doc_no_py, filtered_py)
