@@ -1,12 +1,12 @@
 """ Tests on notebook 1 text.
 """
 
-import os
 import os.path as op
 from pathlib import Path
 from copy import deepcopy
 
 import panflute as pf
+import jupytext
 
 import noteout.filter_divspans as nfds
 import noteout.write_notebooks as nwnbs
@@ -63,6 +63,36 @@ def test_nb1_notebook(nb1_doc, tmp_path):
         assert actual == expected
         for nb_name in NB_NAMES:
             assert (tmp_path / f'{nb_name}.{nb_format}').exists()
+
+
+NB_EXPECTED = {'first_notebook': """\
+# First notebook
+
+
+Here is a paragraph.
+
+And another.
+""",
+               'second_notebook': """\
+# Second notebook
+
+
+Here, again, is a paragraph.
+
+And, again, another.
+"""}
+
+
+def test_notebooks(in_tmp_path, nb1_doc):
+    for lang, nb_format in (('python', 'ipynb'),
+                            ('r', 'Rmd')):
+        nb1_doc.metadata['noteout'] = {'nb-format': nb_format}
+        filter_doc(nb1_doc, nwnbs)
+        for nb_name in NB_NAMES:
+            nb = jupytext.read(f'{nb_name}.{nb_format}')
+            assert len(nb.cells) == 2
+            nb_md = jupytext.writes(nb, fmt='Rmd')
+            assert nb_md == NB_EXPECTED[nb_name]
 
 
 @pytest.fixture
