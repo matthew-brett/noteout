@@ -76,9 +76,9 @@ def test_nb1_notebook(tmp_path):
     contents = get_contents(pth)
     doc = read_md(StringIO(contents))
     # Simulate _variables.yml file read
-    for lang, exp_ext in (('python', 'ipynb'),
-                          ('r', 'Rmd')):
-        doc.metadata['_quarto-vars'] = {'edition': lang}
+    for lang, nb_format in (('python', 'ipynb'),
+                            ('r', 'Rmd')):
+        doc.metadata['noteout'] = {'nb-format': nb_format}
         doc.metadata['project'] = {'output-dir': str(tmp_path)}
         nb_filtered = filter_me(doc, nwnbs)
         actual = pf.convert_text(nb_filtered,
@@ -88,7 +88,7 @@ def test_nb1_notebook(tmp_path):
             DATA_DIR.joinpath(f'nb1_{lang}_nbs.Rmd'),
             output_format='markdown')
         assert actual == expected
-        nb1 = tmp_path / f'first_notebook.{exp_ext}'
+        nb1 = tmp_path / f'first_notebook.{nb_format}'
         assert nb1.exists()
-        nb2 = tmp_path / f'second_notebook.{exp_ext}'
+        nb2 = tmp_path / f'second_notebook.{nb_format}'
         assert nb2.exists()

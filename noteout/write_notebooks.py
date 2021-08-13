@@ -14,11 +14,6 @@ FENCE_START_RE = re.compile(r'^```\s*(\w+)$', re.MULTILINE)
 # Stuff inside HTML (and Markdown) comment markers.
 COMMENT_RE = re.compile(r'<!--.*?-->', re.MULTILINE | re.DOTALL)
 
-FMT_RECODES = {'r': 'Rmd',
-               'R': 'Rmd',
-               'python': 'ipynb',
-               'Python': 'ipynb'}
-
 DEFAULT_BINDER = ('https://mybinder.org/v2/gh/resampling-stats/'
                   'resampling-with/gh-pages?filepath=python-book/')
 
@@ -43,7 +38,7 @@ def text2nb_text(nb_text, out_fmt):
 def write_notebook(name, content, doc):
     out_root = doc.get_metadata('project.output-dir')
     out_sdir = doc.get_metadata('noteout.nb-sdir')
-    out_fmt = FMT_RECODES[doc.edition]
+    out_fmt = doc.nb_format
     parts = [out_root, out_sdir,  f"{name}.{out_fmt}"]
     out_fname = op.join(*[p for p in parts if p])
     out_dir = op.basename(out_fname)
@@ -61,8 +56,7 @@ def write_notebook(name, content, doc):
 
 
 def prepare(doc):
-    edition = doc.get_metadata('_quarto-vars.edition')
-    doc.edition = edition.lower() if edition else None
+    doc.nb_format = doc.get_metadata('noteout.nb-format', 'Rmd')
 
 
 def action(elem, doc):
@@ -80,7 +74,7 @@ def action(elem, doc):
     binder_url = doc.get_metadata('binder_url', default=DEFAULT_BINDER)
     interact_bit = ('<a class="interact-button" '
                     f'href="{binder_url}{nb_path}">Interact</a>\n'
-                    if doc.edition == 'python' else '')
+                    if doc.nb_format == 'ipynb' else '')
     header.append(pf.RawBlock(
         f"""\
 <div class="nb-links">
@@ -96,7 +90,7 @@ def action(elem, doc):
 
 
 def finalize(doc):
-    del doc.edition
+    del doc.nb_format
 
 
 def main(doc=None):
