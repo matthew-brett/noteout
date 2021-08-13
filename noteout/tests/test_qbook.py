@@ -48,5 +48,5 @@ def test_qbook_render(tmp_path):
         nb_only_str = 'This appears only in the notebook'
         assert nb_only_str not in intro_contents
         nb = jupytext.read(book_dir / gen_nb_fname)
-        assert len(nb.cells) == 1
-        assert nb_only_str in nb.cells[0]['source']
+        assert len(nb.cells) == 2
+        assert nb_only_str in nb.cells[1]['source']
