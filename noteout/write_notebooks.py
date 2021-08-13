@@ -34,12 +34,12 @@ def text2nb_text(nb_text, out_fmt):
 
 def write_notebook(name, content, doc):
     out_root = doc.get_metadata('project.output-dir')
-    out_sdir = doc.get_metadata('noteout.nb-sdir')
+    out_sdir = doc.get_metadata('noteout.nb-dir')
     out_fmt = doc.nb_format
     parts = [out_root, out_sdir,  f"{name}.{out_fmt}"]
     out_fname = op.join(*[p for p in parts if p])
     out_dir = op.dirname(out_fname)
-    if not op.isdir(out_dir):
+    if out_dir and not op.isdir(out_dir):
         os.makedirs(out_dir)
     nb_md = pf.convert_text(content,
                             input_format='panflute',

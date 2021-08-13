@@ -1,10 +1,12 @@
 """ Test utilities
 """
 
+import os
 import json
 from copy import deepcopy
 
 import panflute as pf
+import pytest
 
 
 def dump_json(d, fname):
@@ -42,3 +44,11 @@ def filter_doc(doc, filt_mod):
                   doc=copied)
     copied.metadata = {}
     return copied
+
+
+@pytest.fixture
+def in_tmp_path(tmp_path):
+    cwd = os.getcwd()
+    os.chdir(tmp_path)
+    yield tmp_path
+    os.chdir(cwd)
