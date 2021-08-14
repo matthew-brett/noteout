@@ -48,7 +48,6 @@ Use with something like the following in your `_quarto.yml` file:
 filters:
   - quarto
   - noteout-write-notebooks
-  - noteout-filter-nb-only
 
 noteout:
   nb-format: Rmd
