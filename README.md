@@ -54,3 +54,8 @@ noteout:
 ```
 
 By default, Noteout writes your notebooks to your Quarto `output-dir`. In the example above, Noteout would write `a_notebook.Rmd` and `b_notebook.Rmd` to your `output-dir` directory.
+
+See the [Resampling book](https://resampling-stats.github.io/resampling-with)
+for a fully worked example, with extra configuration, and the [Resampling-with
+Github repository](https://github.com/resampling-stats/resampling-with) for
+the configuration and text source files.
