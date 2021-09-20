@@ -42,5 +42,9 @@ class NbonlyFilter(Filter):
         return cls.bad_names
 
 
+def main(doc=None):
+    NbonlyFilter.main(doc=doc)
+
+
 if __name__ == "__main__":
-    NbonlyFilter.main()
+    main()

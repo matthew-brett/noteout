@@ -9,5 +9,9 @@ class PreFilter(MetaFilter):
     metadata_field = 'noteout.pre-filter'
 
 
+def main(doc=None):
+    PreFilter.main(doc=doc)
+
+
 if __name__ == "__main__":
-    PreFilter.main()
+    main()

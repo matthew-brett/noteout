@@ -26,7 +26,8 @@ def test_qbook_render(tmp_path):
         out_yml = deepcopy(in_yml)
         out_yml['noteout'] = {
             'filter-divspans': ['python'] if lang == 'r' else ['r'],
-            'nb-format': exp_ext}
+            'nb-format': exp_ext,
+            'pre-filter': ['comment']}
         if lang == 'python':
             out_yml['binder-url'] = (
                 'https://mybinder.org/v2/gh/resampling-stats/'

@@ -16,5 +16,9 @@ class MetaFilter(Filter):
         return set()
 
 
+def main(doc=None):
+    MetaFilter.main(doc=doc)
+
+
 if __name__ == "__main__":
-    MetaFilter.main()
+    main()

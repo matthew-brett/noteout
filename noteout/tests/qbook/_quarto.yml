@@ -12,6 +12,7 @@ book:
     - references.qmd
 
 filters:
+  - noteout-filter-pre
   - noteout-filter-divspans
   - quarto
   - noteout-write-meta
