@@ -4,14 +4,43 @@
 import panflute as pf
 
 
-def action(elem, doc):
-    if (isinstance(elem, (pf.Div, pf.Span)) and 'nb-only' in elem.classes):
-        return []
+class Filter:
+
+    @classmethod
+    def get_bad_names(cls, doc):
+        raise NotImplementedError
+
+    @classmethod
+    def prepare(cls, doc):
+        doc.bad_names = cls.get_bad_names(doc)
+
+    @classmethod
+    def action(cls, elem, doc):
+        bad_names = doc.bad_names
+        if (isinstance(elem, (pf.Div, pf.Span)) and
+            bad_names.intersection(elem.classes)):
+            return []
+
+    @classmethod
+    def finalize(cls, doc):
+        del doc.bad_names
+
+    @classmethod
+    def main(cls, doc=None):
+        return pf.run_filter(cls.action,
+                             prepare=cls.prepare,
+                             finalize=cls.finalize,
+                             doc=doc)
 
 
-def main(doc=None):
-    return pf.run_filter(action, doc=doc)
+class NbonlyFilter(Filter):
+
+    bad_names = {'nb-only'}
+
+    @classmethod
+    def get_bad_names(cls, doc):
+        return cls.bad_names
 
 
 if __name__ == "__main__":
-    main()
+    NbonlyFilter.main()

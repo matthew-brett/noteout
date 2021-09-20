@@ -8,7 +8,7 @@ from copy import deepcopy
 import panflute as pf
 import jupytext
 
-import noteout.filter_divspans as nfds
+from noteout.filter_divspans import MetaFilter as nfds
 import noteout.write_notebooks as nwnbs
 
 from .tutils import (read_md, assert_json_equal, filter_doc, in_tmp_path)

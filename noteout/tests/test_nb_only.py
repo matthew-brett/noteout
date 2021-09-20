@@ -3,7 +3,7 @@
 
 from io import StringIO
 
-import noteout.nb_only as nnbo
+from noteout.nb_only import NbonlyFilter as nnbo
 
 from .tutils import (read_md, assert_json_equal, filter_doc)
 

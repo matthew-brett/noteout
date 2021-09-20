@@ -1,38 +1,20 @@
 """ Panflute filter to drop divs and spans
 """
 
-import panflute as pf
+from .nb_only import Filter
 
 
-def get_bad_names(doc):
-    dds = doc.get_metadata('noteout.filter-divspans')
-    if dds is not None:
-        return {dds} if isinstance(dds, str) else set(dds)
-    return set()
+class MetaFilter(Filter):
 
+    metadata_field = 'noteout.filter-divspans'
 
-def prepare(doc):
-    doc.bad_names = get_bad_names(doc)
-
-
-def action(elem, doc):
-    bad_names = doc.bad_names
-    if (isinstance(elem, (pf.Div, pf.Span)) and
-        bad_names.intersection(elem.classes)):
-        return []
-
-
-def finalize(doc):
-    return
-    del doc.bad_names
-
-
-def main(doc=None):
-    return pf.run_filter(action,
-                         prepare=prepare,
-                         finalize=finalize,
-                         doc=doc)
+    @classmethod
+    def get_bad_names(cls, doc):
+        dds = doc.get_metadata(cls.metadata_field)
+        if dds is not None:
+            return {dds} if isinstance(dds, str) else set(dds)
+        return set()
 
 
 if __name__ == "__main__":
-    main()
+    MetaFilter.main()
