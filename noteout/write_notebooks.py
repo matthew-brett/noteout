@@ -4,6 +4,7 @@
 import os
 import os.path as op
 import re
+from copy import deepcopy
 
 import panflute as pf
 import jupytext as jpt
@@ -36,6 +37,26 @@ def name2title(name):
     return name.replace('_', ' ').capitalize()
 
 
+def prepare(doc):
+    doc.nb_format = doc.get_metadata('noteout.nb-format', 'Rmd')
+    doc.strip_header_nos = doc.get_metadata('noteout.strip-header-nos', True)
+
+
+def strip_cells(elem, doc):
+    if not isinstance(elem, (pf.Div, pf.Span)):
+        return
+    if (doc.strip_header_nos and
+        isinstance(elem, pf.Span) and
+        'header-section-number' in elem.classes):
+        return []
+    if 'cell' not in elem.classes:
+        return
+    for child in elem.content:
+        if 'cell-code' in child.classes:
+            return child
+    return []
+
+
 def write_notebook(name, elem, doc):
     out_root = doc.get_metadata('project.output-dir')
     out_sdir = doc.get_metadata('noteout.nb-dir')
@@ -58,19 +79,7 @@ def write_notebook(name, elem, doc):
             op.relpath(out_fname, out_root))
 
 
-def prepare(doc):
-    doc.nb_format = doc.get_metadata('noteout.nb-format', 'Rmd')
-
-
-def action(elem, doc):
-    if not isinstance(elem, pf.Div):
-        return
-    if not 'notebook' in elem.classes:
-        return
-    name = elem.attributes.get('name')
-    if name is None:
-        raise RuntimeError('Need name attribute for notebook')
-    nb_path = write_notebook(name, elem, doc)
+def get_header_footer(name, doc, nb_path):
     header = pf.convert_text(f'Start of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
@@ -89,12 +98,27 @@ def action(elem, doc):
     footer = pf.convert_text(f'End of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
+    return header, footer
+
+
+def action(elem, doc):
+    if not isinstance(elem, pf.Div):
+        return
+    if not 'notebook' in elem.classes:
+        return
+    name = elem.attributes.get('name')
+    if name is None:
+        raise RuntimeError('Need name attribute for notebook')
+    stripped = deepcopy(elem)
+    stripped.walk(strip_cells)
+    nb_path = write_notebook(name, stripped, doc)
+    header, footer = get_header_footer(name, doc, nb_path)
     elem.content = header + list(elem.content) + footer
     return elem
 
 
 def finalize(doc):
-    del doc.nb_format
+    del doc.nb_format, doc.strip_header_nos
 
 
 def main(doc=None):
