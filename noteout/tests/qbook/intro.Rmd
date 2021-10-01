@@ -20,7 +20,15 @@ Here is a paragraph.
 This appears only in the notebook
 :::
 
-And another.
+## A heading
+
+```{python}
+10
+```
+
+```{r}
+10
+```
 :::
 
 ::: Python

@@ -49,6 +49,9 @@ def strip_cells(elem, doc):
         isinstance(elem, pf.Span) and
         'header-section-number' in elem.classes):
         return []
+    # Replace nb-only containers with their contents.
+    if 'nb-only' in elem.classes:
+        return list(elem.content)
     if 'cell' not in elem.classes:
         return
     for child in elem.content:
