@@ -5,7 +5,9 @@ title: "My Document"
 # Introduction
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(comment = "#>")
+knitr::opts_chunk$set(
+  comment = "#>" # To give unique prefix to output comments.
+)
 ```
 
 This is a book created from markdown and executable code.
@@ -27,10 +29,12 @@ This appears only in the notebook
 ## A heading
 
 ```{python}
+# Bare 10 in Python
 10
 ```
 
 ```{r}
+# Bare 10 in R
 10
 ```
 :::

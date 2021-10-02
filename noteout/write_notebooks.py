@@ -46,6 +46,10 @@ def finalize(doc):
     del doc.nb_format, doc.strip_header_nos
 
 
+def filter_out(elem):
+    return [e for e in elem.content if 'cell-code' in e.classes]
+
+
 def strip_cells(elem, doc):
     if not isinstance(elem, (pf.Div, pf.Span)):
         return
@@ -53,13 +57,14 @@ def strip_cells(elem, doc):
         isinstance(elem, pf.Span) and
         'header-section-number' in elem.classes):
         return []
-    # Replace nb-only containers with their contents.
-    if 'nb-only' in elem.classes:
+    # Replace various containers with their contents.
+    if ({'nb-only', 'r', 'python', 'header-section-number'} &
+        set(elem.classes)):
         return list(elem.content)
     # Drop cell div and all contents except code.
     if 'cell' not in elem.classes:
         return
-    return [e for e in elem.content if 'cell-code' in e.classes]
+    return filter_out(elem)
 
 
 def write_notebook(name, elem, doc):
