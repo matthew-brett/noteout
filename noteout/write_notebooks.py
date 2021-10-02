@@ -42,6 +42,10 @@ def prepare(doc):
     doc.strip_header_nos = doc.get_metadata('noteout.strip-header-nos', True)
 
 
+def finalize(doc):
+    del doc.nb_format, doc.strip_header_nos
+
+
 def strip_cells(elem, doc):
     if not isinstance(elem, (pf.Div, pf.Span)):
         return
@@ -52,12 +56,10 @@ def strip_cells(elem, doc):
     # Replace nb-only containers with their contents.
     if 'nb-only' in elem.classes:
         return list(elem.content)
+    # Drop cell div and all contents except code.
     if 'cell' not in elem.classes:
         return
-    for child in elem.content:
-        if 'cell-code' in child.classes:
-            return child
-    return []
+    return [e for e in elem.content if 'cell-code' in e.classes]
 
 
 def write_notebook(name, elem, doc):
@@ -118,10 +120,6 @@ def action(elem, doc):
     header, footer = get_header_footer(name, doc, nb_path)
     elem.content = header + list(elem.content) + footer
     return elem
-
-
-def finalize(doc):
-    del doc.nb_format, doc.strip_header_nos
 
 
 def main(doc=None):

@@ -112,10 +112,10 @@ def test_qbook_render(tmp_path):
         assert p1['lines'] == [
             'Here is a paragraph.',
             NB_ONLY_STR,
-            'A heading']  # Includes check that header no stripped.
+            'A heading']  # Includes check that header number stripped.
         # Check nb-only div stripped.
         assert not isinstance(p1['pfp'], pf.Div)
-        # Check cell outputs stripped from text.
+        # Check cell output blocks stripped from text.
         for cell_info in parsed:
             if cell_info is None:
                 continue

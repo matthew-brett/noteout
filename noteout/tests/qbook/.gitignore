@@ -2,3 +2,4 @@
 _book/
 notebooks/
 meta*.json
+site_libs/

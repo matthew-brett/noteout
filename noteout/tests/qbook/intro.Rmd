@@ -4,6 +4,10 @@ title: "My Document"
 
 # Introduction
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(comment = "#>")
+```
+
 This is a book created from markdown and executable code.
 
 See @knuth84 for additional discussion of literate programming.
