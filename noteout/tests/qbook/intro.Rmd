@@ -37,7 +37,19 @@ This appears only in the notebook
 # Bare 10 in R
 10
 ```
+
+[R thing]{.r}[Python thing]{.python}
+
+::: python
+Python text in notebook.
 :::
+
+::: r
+R text in notebook.
+:::
+
+Last text in notebook.
+::::::
 
 ::: Python
 Some Python stuff.

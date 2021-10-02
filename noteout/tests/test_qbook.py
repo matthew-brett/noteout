@@ -64,16 +64,17 @@ def make_book_lang(out_path, lang, extra_config=None, render_args=()):
 def read_notebook(nb_fname):
     # Check notebook contents
     nb = jupytext.read(nb_fname)
-    parsed_cells = []
-    for cell in nb.cells:
+    parsed_cells = [{'cell_type': c['cell_type']} for c in nb.cells]
+    for i, cell in enumerate(nb.cells):
         if cell['cell_type'] != 'markdown':
-            parsed_cells.append(None)
             continue
         pfp = pf.convert_text(cell['source'],
                               input_format='markdown',
                               output_format='panflute')
-        lines = [pf.stringify(v).strip() for v in pfp]
-        parsed_cells.append(dict(pfp=pfp, lines=lines))
+        parsed_cells[i].update(dict(
+            pfp=pfp,
+            lines=[pf.stringify(v).strip() for v in pfp],
+            types=[type(v) for v in pfp]))
     return nb, parsed_cells
 
 
@@ -106,20 +107,31 @@ def test_qbook_render(tmp_path):
         assert NB_ONLY_STR not in intro_contents
         # Check notebook contents
         nb, parsed = read_notebook(book_dir / gen_nb_fname)
-        # There will be 6 cells if output left in notebook.
-        assert len(nb.cells) == 4
+        # There will be 7 cells if output left in notebook.
+        assert len(nb.cells) == 5
         p1 = parsed[1]
         assert p1['lines'] == [
             'Here is a paragraph.',
             NB_ONLY_STR,
             'A heading']  # Includes check that header number stripped.
         # Check nb-only div stripped.
-        assert not isinstance(p1['pfp'], pf.Div)
+        assert p1['types'] == [pf.Para, pf.Para, pf.Header]
         # Check cell output blocks stripped from text.
         for cell_info in parsed:
-            if cell_info is None:
+            if cell_info['cell_type'] != 'markdown':
                 continue
             assert not any(isinstance(e, pf.RawBlock) for e in cell_info)
+        pm1 = parsed[-1]
+        assert (pm1['lines'] ==
+                [f'{lang} thing',
+                 f'{lang} text in notebook.',
+                 'Last text in notebook.'])
+        # Test (lack of) container filter here
+        assert pm1['types'] == [pf.Para,
+                                pf.Div,  # Python-only section.
+                                pf.Para]
+        # There's a Python / R span here, without suitable stripping.
+        assert [type(v) for v in pm1['pfp'][0].content] == [pf.Span]
 
 
 def test_header_strip(tmp_path):
@@ -132,3 +144,30 @@ def test_header_strip(tmp_path):
         'Here is a paragraph.',
         NB_ONLY_STR,
         '2.1 A heading']
+    # Turn off all container filtering.
+    book_path = tmp_path / 'book2'
+    extra_config = {'noteout': {'nb-flatten-divspans': [],
+                                'strip-header-nos': False}}
+    make_book_lang(book_path, 'Python', extra_config)
+    nb, parsed = read_notebook(book_path / '_book' / 'my_notebook.ipynb')
+    # Check nothing is filtered.
+    assert parsed[1]['types'] == [pf.Para, pf.Div, pf.Header]
+    assert parsed[-1]['types'] == [pf.Para, pf.Div, pf.Para]
+    # Python / R span to start last cell.
+    assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Span]
+    # Header has span around number.
+    assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
+            [pf.Span, pf.Space, pf.Str, pf.Space, pf.Str])
+    # Turn on maximal container filtering.
+    book_path = tmp_path / 'book3'
+    extra_config = {'noteout': {'nb-flatten-divspans':
+                                ['header-section-number',
+                                 'nb-only', 'python']}}
+    params = make_book_lang(book_path, 'Python', extra_config)
+    nb, parsed = read_notebook(book_path / '_book' / 'my_notebook.ipynb')
+    # Check everything is filtered.
+    assert parsed[1]['types'] == [pf.Para, pf.Para, pf.Header]
+    assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
+    assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Para]
+    assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
+            [pf.Str, pf.Space, pf.Str, pf.Space, pf.Str])

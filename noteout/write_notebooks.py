@@ -40,10 +40,13 @@ def name2title(name):
 def prepare(doc):
     doc.nb_format = doc.get_metadata('noteout.nb-format', 'Rmd')
     doc.strip_header_nos = doc.get_metadata('noteout.strip-header-nos', True)
+    doc.nb_flatten_divspans = set(
+        doc.get_metadata('noteout.nb-flatten-divspans',
+                         {'header-section-number', 'nb-only'}))
 
 
 def finalize(doc):
-    del doc.nb_format, doc.strip_header_nos
+    del doc.nb_format, doc.strip_header_nos, doc.nb_flatten_divspans
 
 
 def filter_out(elem):
@@ -58,8 +61,9 @@ def strip_cells(elem, doc):
         'header-section-number' in elem.classes):
         return []
     # Replace various containers with their contents.
-    if ({'nb-only', 'r', 'python', 'header-section-number'} &
-        set(elem.classes)):
+    if doc.nb_flatten_divspans.intersection(elem.classes):
+        return list(elem.content)
+    if 'python' in elem.classes:
         return list(elem.content)
     # Drop cell div and all contents except code.
     if 'cell' not in elem.classes:
