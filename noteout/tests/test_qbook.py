@@ -32,7 +32,9 @@ def get_yml_config(lang='Python'):
 
 def copy_book_source(out_path):
     copytree(QBOOK_PATH, out_path)
-    rmtree(out_path / '_book')
+    built_path = out_path / '_book'
+    if built_path.exists():
+        rmtree(built_path)
     for fn in glob(str(out_path / 'meta*.json')):
         unlink(fn)
 
