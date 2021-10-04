@@ -168,7 +168,7 @@ def test_qbook_render(tmp_path):
 def test_nb_output(tmp_path):
     extra_config = {'noteout': {'strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
-    nb, parsed = params['nb'], params['nb_parsed']
+    parsed = params['nb_parsed']
     # If we turn off header stripping, we get section no.
     assert parsed[1]['lines'] == [
         'Here is a paragraph.',
@@ -178,7 +178,7 @@ def test_nb_output(tmp_path):
     extra_config = {'noteout': {'nb-flatten-divspans': [],
                                 'strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
-    _, parsed = params['nb'], params['nb_parsed']
+    parsed = params['nb_parsed']
     # Check nothing is filtered.
     assert parsed[1]['types'] == [pf.Para, pf.Div, pf.Header]
     assert parsed[-1]['types'] == [pf.Para, pf.Div, pf.Para]
@@ -192,7 +192,7 @@ def test_nb_output(tmp_path):
                                 ['+', 'python'],
                                 'strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
-    _, parsed = params['nb'], params['nb_parsed']
+    parsed = params['nb_parsed']
     # Check everything is filtered.
     assert parsed[1]['types'] == [pf.Para, pf.Para, pf.Header]
     assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
@@ -208,7 +208,7 @@ def test_nb_output(tmp_path):
                                 ['python'],
                                 'strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
-    _, parsed = params['nb'], params['nb_parsed']
+    parsed = params['nb_parsed']
     # The nb only is not flattened
     assert parsed[1]['types'] == [pf.Para, pf.Div, pf.Header]
     # But the Python block is.
