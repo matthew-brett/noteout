@@ -15,6 +15,9 @@ FENCE_START_RE = re.compile(r'^```\s*(\w+)$', re.MULTILINE)
 # Stuff inside HTML (and Markdown) comment markers.
 COMMENT_RE = re.compile(r'<!--.*?-->', re.MULTILINE | re.DOTALL)
 
+# Default flatten divspans
+DEFAULT_FLATTEN_DS = {'header-section-number', 'nb-only'}
+
 
 def proc_text(nb_text):
     """ Process notebook GFM markdown
@@ -40,9 +43,12 @@ def name2title(name):
 def prepare(doc):
     doc.nb_format = doc.get_metadata('noteout.nb-format', 'Rmd')
     doc.strip_header_nos = doc.get_metadata('noteout.strip-header-nos', True)
-    doc.nb_flatten_divspans = set(
-        doc.get_metadata('noteout.nb-flatten-divspans',
-                         {'header-section-number', 'nb-only'}))
+    flat_ds = set(doc.get_metadata('noteout.nb-flatten-divspans',
+                                   DEFAULT_FLATTEN_DS))
+    if '+' in flat_ds:
+        flat_ds.remove('+')
+        flat_ds = flat_ds | DEFAULT_FLATTEN_DS
+    doc.nb_flatten_divspans = flat_ds
 
 
 def finalize(doc):
@@ -62,8 +68,6 @@ def strip_cells(elem, doc):
         return []
     # Replace various containers with their contents.
     if doc.nb_flatten_divspans.intersection(elem.classes):
-        return list(elem.content)
-    if 'python' in elem.classes:
         return list(elem.content)
     # Drop cell div and all contents except code.
     if 'cell' not in elem.classes:

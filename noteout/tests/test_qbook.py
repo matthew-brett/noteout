@@ -1,12 +1,15 @@
 """ Test rendering of a project
 """
 
-from os import listdir
+from os import listdir, unlink
 from pathlib import Path
 from subprocess import run
-from shutil import copytree
+from shutil import copytree, rmtree
+from glob import glob
 from copy import deepcopy
 from collections.abc import Mapping
+from hashlib import sha1
+import json
 
 import yaml
 import jupytext
@@ -27,9 +30,15 @@ def get_yml_config(lang='Python'):
         'nb-format': 'Rmd' if is_r else 'ipynb'})
     return config
 
+def copy_book_source(out_path):
+    copytree(QBOOK_PATH, out_path)
+    rmtree(out_path / '_book')
+    for fn in glob(str(out_path / 'meta*.json')):
+        unlink(fn)
+
 
 def make_book(out_path, yml_config, args=()):
-    copytree(QBOOK_PATH, out_path)
+    copy_book_source(out_path)
     with open(out_path / '_quarto.yml', 'wt') as fobj:
         yaml.dump(yml_config, fobj)
     run(['quarto', 'render', '.'] + list(args), cwd=out_path)
@@ -78,20 +87,37 @@ def read_notebook(nb_fname):
     return nb, parsed_cells
 
 
+def dicthash(d, **kwargs):
+    d = deepcopy(d)
+    d.update(kwargs)
+    return sha1(json.dumps(d).encode('latin1')).hexdigest()
+
+
+def make_new_book(tmp_path, lang, extra_config):
+    hsh = dicthash(extra_config)
+    book_path = tmp_path / f'{lang}_{hsh}'
+    assert not Path(book_path).exists()
+    params = make_book_lang(book_path, lang, extra_config)
+    nb, nb_parsed = read_notebook(book_path / '_book' /
+                                  f'my_notebook.{params["nb_ext"]}')
+    params.update(dict(book_path=book_path, nb=nb, nb_parsed=nb_parsed))
+    return params
+
+
 def test_qbook_render(tmp_path):
     # Test qbook build.
     # Output from write_meta filter.
     metas = set([f'meta_{i:03d}.json' for i in range(4)])
     for lang in ('Python', 'R'):
-        tmp_qbook = tmp_path / f'{lang}_qbook'
         extra_config = {'noteout': {'pre-filter': ['comment']}}
         if lang == 'Python':
             extra_config['binder-url'] = (
                 'https://mybinder.org/v2/gh/resampling-stats/'
                 'resampling-with/gh-pages?filepath=python-book/')
-        params = make_book_lang(tmp_qbook,
-                                lang,
-                                extra_config)
+        params = make_new_book(tmp_path,
+                               lang,
+                               extra_config)
+        tmp_qbook = params['book_path']
         # Check meta files from write_meta
         source_listing = listdir(tmp_qbook)
         assert metas <= set(source_listing)
@@ -102,11 +128,14 @@ def test_qbook_render(tmp_path):
         assert set(['index.html',
                     gen_nb_fname,
                     'intro.html']) <= set(out_fnames)
+        # We aren't building the other notebook type.
+        other_ext = 'ipynb' if lang == 'R' else 'Rmd'
+        assert f"my_notebook.{other_ext}" not in out_fnames
         with open(book_dir / 'intro.html', 'rt') as fobj:
             intro_contents = fobj.read()
         assert NB_ONLY_STR not in intro_contents
         # Check notebook contents
-        nb, parsed = read_notebook(book_dir / gen_nb_fname)
+        nb, parsed = params['nb'], params['nb_parsed']
         # There will be 7 cells if output left in notebook.
         assert len(nb.cells) == 5
         p1 = parsed[1]
@@ -134,22 +163,20 @@ def test_qbook_render(tmp_path):
         assert [type(v) for v in pm1['pfp'][0].content] == [pf.Span]
 
 
-def test_header_strip(tmp_path):
-    book_path = tmp_path / 'book'
+def test_nb_output(tmp_path):
     extra_config = {'noteout': {'strip-header-nos': False}}
-    make_book_lang(book_path, 'Python', extra_config)
-    nb, parsed = read_notebook(book_path / '_book' / 'my_notebook.ipynb')
+    params = make_new_book(tmp_path, 'Python', extra_config)
+    nb, parsed = params['nb'], params['nb_parsed']
     # If we turn off header stripping, we get section no.
     assert parsed[1]['lines'] == [
         'Here is a paragraph.',
         NB_ONLY_STR,
         '2.1 A heading']
     # Turn off all container filtering.
-    book_path = tmp_path / 'book2'
     extra_config = {'noteout': {'nb-flatten-divspans': [],
                                 'strip-header-nos': False}}
-    make_book_lang(book_path, 'Python', extra_config)
-    nb, parsed = read_notebook(book_path / '_book' / 'my_notebook.ipynb')
+    params = make_new_book(tmp_path, 'Python', extra_config)
+    _, parsed = params['nb'], params['nb_parsed']
     # Check nothing is filtered.
     assert parsed[1]['types'] == [pf.Para, pf.Div, pf.Header]
     assert parsed[-1]['types'] == [pf.Para, pf.Div, pf.Para]
@@ -158,16 +185,36 @@ def test_header_strip(tmp_path):
     # Header has span around number.
     assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
             [pf.Span, pf.Space, pf.Str, pf.Space, pf.Str])
-    # Turn on maximal container filtering.
-    book_path = tmp_path / 'book3'
+    # Turn on maximal container filtering, retain header numbers.
     extra_config = {'noteout': {'nb-flatten-divspans':
-                                ['header-section-number',
-                                 'nb-only', 'python']}}
-    params = make_book_lang(book_path, 'Python', extra_config)
-    nb, parsed = read_notebook(book_path / '_book' / 'my_notebook.ipynb')
+                                ['+', 'python'],
+                                'strip-header-nos': False}}
+    params = make_new_book(tmp_path, 'Python', extra_config)
+    _, parsed = params['nb'], params['nb_parsed']
     # Check everything is filtered.
     assert parsed[1]['types'] == [pf.Para, pf.Para, pf.Header]
     assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
-    assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Para]
+    # Now we have the contents of the Python span, not the span.
+    assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Str,
+                                                               pf.Space,
+                                                               pf.Str]
+    # We have the header number, but not the header number span.
     assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
             [pf.Str, pf.Space, pf.Str, pf.Space, pf.Str])
+    # If we don't add the '+', we don't get header or nb-only flattening.
+    extra_config = {'noteout': {'nb-flatten-divspans':
+                                ['python'],
+                                'strip-header-nos': False}}
+    params = make_new_book(tmp_path, 'Python', extra_config)
+    _, parsed = params['nb'], params['nb_parsed']
+    # The nb only is not flattened
+    assert parsed[1]['types'] == [pf.Para, pf.Div, pf.Header]
+    # But the Python block is.
+    assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
+    # We have the contents of the span, from span flattening.
+    assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Str,
+                                                               pf.Space,
+                                                               pf.Str]
+    # We still have the header span tho'
+    assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
+            [pf.Span, pf.Space, pf.Str, pf.Space, pf.Str])
