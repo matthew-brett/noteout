@@ -53,12 +53,10 @@ def merge_dict(d1, d2):
             out[k] = v2
             continue
         v1 = d1[k]
-        if isinstance(v2, Mapping):
-            if isinstance(v1, Mapping):
-                out[k] = merge_dict(v1, v2)
-            else:
-                out[k] = v2
-            continue
+        if isinstance(v2, Mapping) and isinstance(v1, Mapping):
+            out[k] = merge_dict(v1, v2)
+        else:
+            out[k] = v2
     return out
 
 
