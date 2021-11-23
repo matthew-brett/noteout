@@ -56,7 +56,7 @@ def finalize(doc):
 
 
 def filter_out(elem):
-    return [e for e in elem.content if 'cell-code' in e.classes]
+    return [e for e in elem.content if 'cell-code' in getattr(e, 'classes', {})]
 
 
 def strip_cells(elem, doc):
