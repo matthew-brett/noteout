@@ -108,6 +108,7 @@ def test_qbook_render(tmp_path):
     # Test qbook build.
     # Output from write_meta filter.
     metas = set([f'meta_{i:03d}.json' for i in range(4)])
+    docs = set([f'doc_{i:03d}.json' for i in range(4)])
     for lang in ('Python', 'R'):
         extra_config = {'noteout': {'pre-filter': ['comment']}}
         if lang == 'Python':
@@ -121,6 +122,8 @@ def test_qbook_render(tmp_path):
         # Check meta files from write_meta
         source_listing = listdir(tmp_qbook)
         assert metas <= set(source_listing)
+        # Check doc files from write_doc
+        assert docs <= set(source_listing)
         # Check book generation.
         book_dir = tmp_qbook / '_book'
         gen_nb_fname = f"my_notebook.{params['nb_ext']}"

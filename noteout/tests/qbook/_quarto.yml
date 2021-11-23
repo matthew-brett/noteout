@@ -16,6 +16,7 @@ filters:
   - noteout-filter-divspans
   - quarto
   - noteout-write-meta
+  - noteout-write-doc
   - noteout-write-notebooks
   - noteout-filter-nb-only
 

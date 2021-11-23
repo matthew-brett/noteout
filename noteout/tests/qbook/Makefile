@@ -2,4 +2,4 @@ project:
 	quarto render .
 
 clean:
-	rm -rf .quarto/ *_files/ _book/ meta*.json
+	rm -rf .quarto/ *_files/ _book/ meta*.json doc*.json
