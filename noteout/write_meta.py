@@ -7,14 +7,14 @@ import panflute as pf
 
 
 @contextmanager
-def new_fobj(template):
-    for i in range(1000):
+def new_fobj(template, max_n=1000):
+    for i in range(max_n):
         fname = template.format(i)
         if not op.exists(fname):
             break
     else:
         raise RuntimeError(
-            'Ran out of files with template "{template}"')
+            f'Ran out of files with max n {max_n} and template "{template}"')
     with open(fname, 'wt') as fobj:
         yield fobj
 
