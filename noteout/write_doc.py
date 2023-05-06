@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """ Filter to write JSON for input document
 
 Useful for debugging Quarto's intermediate files.
@@ -8,7 +9,7 @@ from io import StringIO
 import panflute as pf
 
 
-from .write_meta import new_fobj
+from noteout.write_meta import new_fobj
 
 
 def dump_doc(doc):

@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 """ Panflute filter to drop divs, spans before rest of processing.
 """
 
-from .filter_divspans import MetaFilter
+from noteout.filter_divspans import MetaFilter
 
 
 class PreFilter(MetaFilter):

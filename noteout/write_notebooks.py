@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """ Panflute filter to drop divs and spans
 """
 
