@@ -12,13 +12,13 @@ book:
     - references.qmd
 
 filters:
-  - noteout-filter-pre
-  - noteout-filter-divspans
+  - filter_pre.py
+  - filter_divspans.py
   - quarto
-  - noteout-write-meta
-  - noteout-write-doc
-  - noteout-write-notebooks
-  - noteout-filter-nb-only
+  - write_meta.py
+  - write_doc.py
+  - write_notebooks.py
+  - filter_nb_only.py
 
 bibliography: references.bib
 
