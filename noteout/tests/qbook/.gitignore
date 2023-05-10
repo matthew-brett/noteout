@@ -1,5 +1,6 @@
 /.quarto/
 _book/
 notebooks/
-meta*.json
+*.json
+*.ipynb
 site_libs/
