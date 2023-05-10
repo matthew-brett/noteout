@@ -2,7 +2,7 @@
 """ Panflute filter to drop divs and spans
 """
 
-from noteout.nb_only import Filter
+from noteout.filter_nb_only import Filter
 
 
 class MetaFilter(Filter):
