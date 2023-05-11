@@ -13,6 +13,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      QUARTO_VER: v1.4.51
 
     steps:
       - uses: actions/cache@v2
@@ -38,8 +40,9 @@ jobs:
 
       - name: Install quarto
         run: |
-          curl -LO https://github.com/quarto-dev/quarto-cli/releases/download/v0.2.62/quarto-0.2.62-amd64.deb
-          sudo dpkg --install quarto-0.2.62-amd64.deb
+          sudo apt install -y curl
+          curl -LO https://github.com/quarto-dev/quarto-cli/releases/download/v$QUARTO_VER/quarto-$QUARTO_VER-linux-amd64.deb
+          sudo dpkg --install quarto-$QUARTO_VER-linux-amd64.deb
 
       - uses: actions/setup-python@v1
         with:
