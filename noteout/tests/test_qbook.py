@@ -30,6 +30,7 @@ def get_yml_config(lang='Python'):
         'nb-format': 'Rmd' if is_r else 'ipynb'})
     return config
 
+
 def copy_book_source(out_path):
     copytree(QBOOK_PATH, out_path)
     built_path = out_path / '_book'
@@ -39,11 +40,14 @@ def copy_book_source(out_path):
         unlink(fn)
 
 
-def make_book(out_path, yml_config, args=()):
+def make_book(out_path, yml_config, args=(),
+              formats=('html', 'pdf')
+             ):
     copy_book_source(out_path)
     with open(out_path / '_quarto.yml', 'wt') as fobj:
         yaml.dump(yml_config, fobj)
-    run(['quarto', 'render', '.'] + list(args), cwd=out_path)
+    extra = list(args) + ['--to=' + f for f in formats]
+    run(['quarto', 'render', '.'] + list(extra), cwd=out_path)
 
 
 def merge_dict(d1, d2):
@@ -60,11 +64,12 @@ def merge_dict(d1, d2):
     return out
 
 
-def make_book_lang(out_path, lang, extra_config=None, render_args=()):
+def make_book_lang(out_path, lang, extra_config=None,
+                   render_args=(), formats=('html',)):
     out_yml = get_yml_config(lang)
     if extra_config:
         out_yml = merge_dict(out_yml, extra_config)
-    make_book(out_path, out_yml, args=render_args)
+    make_book(out_path, out_yml, args=render_args, formats=formats)
     return dict(out_path=out_path,
                 config_yml=out_yml,
                 nb_ext='Rmd' if lang == 'R' else 'ipynb')
@@ -93,13 +98,20 @@ def dicthash(d, **kwargs):
     return sha1(json.dumps(d).encode('latin1')).hexdigest()
 
 
-def make_new_book(tmp_path, lang, extra_config):
-    hsh = dicthash(extra_config)
-    book_path = tmp_path / f'{lang}_{hsh}'
+def make_new_book(tmp_path, lang, extra_config=None, formats=('html',)):
+    out_name = lang
+    if extra_config:
+        out_name += '_' + dicthash(extra_config)
+    book_path = tmp_path / out_name
     assert not Path(book_path).exists()
-    params = make_book_lang(book_path, lang, extra_config)
-    nb, nb_parsed = read_notebook(book_path / '_book' /
-                                  f'my_notebook.{params["nb_ext"]}')
+    params = make_book_lang(book_path, lang,
+                            extra_config=extra_config,
+                            formats=formats)
+    if 'html' in formats:  # Only HTML copies notebook.
+        nb, nb_parsed = read_notebook(book_path / '_book' /
+                                    f'my_notebook.{params["nb_ext"]}')
+    else:
+        nb = nb_parsed = {}
     params.update(dict(book_path=book_path, nb=nb, nb_parsed=nb_parsed))
     return params
 
@@ -221,3 +233,8 @@ def test_nb_output(tmp_path):
     # We still have the header span tho'
     assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
             [pf.Span, pf.Space, pf.Str, pf.Space, pf.Str])
+
+
+def test_pdf_smoke(tmpdir):
+    params = make_new_book(tmpdir, 'Python', {}, formats=('pdf',))
+    assert Path(params['book_path'] / '_book' / 'qbook.pdf').is_file()
