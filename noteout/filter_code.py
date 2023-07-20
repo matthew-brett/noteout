@@ -27,11 +27,16 @@ class MetaFilter(Filter):
     @classmethod
     def action(cls, elem, doc):
         bad_names = doc.bad_names
-        if not isinstance(elem, pf.Code):
+        if isinstance(elem, pf.Code):
+            if not (match := CODE_CONFIG_RE.match(elem.text)):
+                return
+            lang, opts = jcm.rmd_options_to_metadata(match.groups()[0])
+        elif isinstance(elem, pf.CodeBlock):
+            if not elem.classes:
+                return
+            lang, opts = elem.classes[0], {}
+        else:
             return
-        if not (match := CODE_CONFIG_RE.match(elem.text)):
-            return
-        lang, opts = jcm.rmd_options_to_metadata(match.groups()[0])
         if not opts.get('all_eds', False) and lang.lower() in bad_names:
             return []
 
