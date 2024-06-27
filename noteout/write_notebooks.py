@@ -6,6 +6,7 @@ import os
 import os.path as op
 import re
 from copy import deepcopy
+from shutil import copyfile
 
 import panflute as pf
 import jupytext as jpt
@@ -19,6 +20,18 @@ COMMENT_RE = re.compile(r'<!--.*?-->', re.MULTILINE | re.DOTALL)
 # Default flatten divspans
 DEFAULT_FLATTEN_DS = {'header-section-number', 'nb-only'}
 
+# Find data read
+READ_RE = re.compile(
+    r'''^\s*
+    \w+\s*(=|<-)\s*
+    (pd\.)*read[._]\w+\(
+    ['"]
+    (?P<fname>.*?)
+    ['"]
+    \)
+    ''',
+    flags=re.MULTILINE | re.VERBOSE)
+
 
 def proc_text(nb_text):
     """ Process notebook GFM markdown
@@ -28,13 +41,6 @@ def proc_text(nb_text):
     # Modify code fencing to add curlies around fence arguments.
     # This converts from GFM Markdown fence blocks to RMarkdown fence blocks.
     return FENCE_START_RE.sub(r'```{\1}', txt)
-
-
-def text2nb_text(nb_text, out_fmt):
-    """ Process notebook GFM Markdown, write to notebook format `out_fmt`
-    """
-    txt = proc_text(nb_text)
-    return jpt.writes(jpt.reads(txt, 'Rmd'), out_fmt)
 
 
 def name2title(name):
@@ -77,6 +83,27 @@ def strip_cells(elem, doc):
     return filter_out(elem)
 
 
+def find_data_reads(nb):
+    out_fnames = []
+    for cell in nb['cells']:
+        if cell['cell_type'] != 'code':
+            continue
+        match = READ_RE.search(cell['source'])
+        if match:
+            out_fnames.append(match.groups()[-1])
+    return out_fnames
+
+
+def write_data_files(nb, out_dir):
+    # Write any data files.
+    for data_fname in find_data_reads(nb):
+        data_out_fname = op.join(out_dir, data_fname)
+        data_out_dir = op.dirname(data_out_fname)
+        if not op.isdir(data_out_dir):
+            os.makedirs(data_out_dir)
+        copyfile(data_fname, data_out_fname)
+
+
 def write_notebook(name, elem, doc):
     out_root = doc.get_metadata('project.output-dir')
     out_sdir = doc.get_metadata('noteout.nb-dir')
@@ -92,8 +119,9 @@ def write_notebook(name, elem, doc):
         input_format='panflute',
         output_format='gfm',
         standalone=True)
-    with open(out_fname, 'wt') as fobj:
-        fobj.write(text2nb_text(nb_md, out_fmt))
+    nb = jpt.reads(proc_text(nb_md), 'Rmd')
+    jpt.write(nb, out_fname, fmt=out_fmt)  # Write notebook.
+    write_data_files(nb, out_dir)  # Write associated data files.
     # Return path relative to out_froot
     return (out_fname if out_root is None else
             op.relpath(out_fname, out_root))
