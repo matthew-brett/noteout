@@ -128,6 +128,14 @@ def write_notebook(name, elem, doc):
 
 
 def get_header_footer(name, doc, nb_path):
+    nb_sdir = doc.get_metadata('noteout.nb-dir', None)
+    link_nb_sdir = doc.get_metadata('noteout.link-nb-dir', nb_sdir)
+    parts = op.split(nb_path)
+    download_path = '/'.join(parts)
+    if nb_sdir != link_nb_sdir and parts[0] == nb_sdir:
+        parts = (parts[1:] if link_nb_sdir is None else
+                 (link_nb_sdir,) + parts[1:])
+    link_path = '/'.join(parts)
     header = pf.convert_text(f'Start of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
@@ -136,11 +144,11 @@ def get_header_footer(name, doc, nb_path):
     if binder_url:
         interact_links = (
             '<a class="interact-button" '
-            f'href="{binder_url}{nb_path}">Interact</a>\n')
+            f'href="{binder_url}{link_path}">Interact</a>\n')
     header.append(pf.RawBlock(
         f"""\
 <div class="nb-links">
-<a class="notebook-link" href={nb_path}>Download notebook</a>
+<a class="notebook-link" href={download_path}>Download notebook</a>
 {interact_links}</div>
 """))
     footer = pf.convert_text(f'End of `{name}` notebook',
