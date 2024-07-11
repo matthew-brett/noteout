@@ -134,9 +134,12 @@ def get_header_footer(name, doc, nb_path):
     interact_links = ''
     binder_url = doc.get_metadata('noteout.binder-url')
     if binder_url:
+        url_nb_suffix = doc.get_metadata('noteout.url_nb_suffix', None)
+        url_nb_path = (nb_path if url_nb_suffix is None else
+                       op.splitext(nb_path)[0] + url_nb_suffix)
         interact_links = (
             '<a class="interact-button" '
-            f'href="{binder_url}{nb_path}">Interact</a>\n')
+            f'href="{binder_url}{url_nb_path}">Interact</a>\n')
     header.append(pf.RawBlock(
         f"""\
 <div class="nb-links">
