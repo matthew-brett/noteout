@@ -133,10 +133,18 @@ def get_header_footer(name, doc, nb_path):
                              output_format='panflute')
     interact_links = ''
     binder_url = doc.get_metadata('noteout.binder-url')
+    nb_path = nb_path.replace(op.sep, '/')  # In URL form.
     if binder_url:
+        link_nb_dir = doc.get_metadata('noteout.link-nb-dir', None)
+        if link_nb_dir is None:
+            link_out_path = nb_path
+        else:
+            name = nb_path.split('/')[-1]
+            link_out_path = (name if link_nb_dir == '' else
+                             f'{link_nb_dir}/{name}')
         url_nb_suffix = doc.get_metadata('noteout.url_nb_suffix', None)
-        url_nb_path = (nb_path if url_nb_suffix is None else
-                       op.splitext(nb_path)[0] + url_nb_suffix)
+        url_nb_path = (link_out_path if url_nb_suffix is None else
+                       op.splitext(link_out_path)[0] + url_nb_suffix)
         interact_links = (
             '<a class="interact-button" '
             f'href="{binder_url}{url_nb_path}">Interact</a>\n')
