@@ -83,7 +83,7 @@ def strip_cells(elem, doc):
     return filter_out(elem)
 
 
-def find_data_reads(nb):
+def find_data_files(nb):
     out_fnames = []
     for cell in nb['cells']:
         if cell['cell_type'] != 'code':
@@ -94,9 +94,9 @@ def find_data_reads(nb):
     return out_fnames
 
 
-def write_data_files(nb, out_dir):
+def write_data_files(data_files, out_dir):
     # Write any data files.
-    for data_fname in find_data_reads(nb):
+    for data_fname in data_files:
         data_out_fname = op.join(out_dir, data_fname)
         data_out_dir = op.dirname(data_out_fname)
         if not op.isdir(data_out_dir):
@@ -120,34 +120,38 @@ def write_notebook(name, elem, doc):
         output_format='gfm',
         standalone=True)
     nb = jpt.reads(proc_text(nb_md), 'Rmd')
+    data_files = find_data_files(nb)
     jpt.write(nb, out_fname, fmt=out_fmt)  # Write notebook.
-    write_data_files(nb, out_dir)  # Write associated data files.
+    write_data_files(data_files, out_dir)  # Write associated data files.
     # Return path relative to out_froot
     return (out_fname if out_root is None else
             op.relpath(out_fname, out_root))
+
+
+def _get_interact_links(doc, nb_path):
+    interact_url = doc.get_metadata('noteout.interact-url')
+    if interact_url is None:
+        return ''
+    nb_path = nb_path.replace(op.sep, '/')  # In URL form.
+    link_nb_dir = doc.get_metadata('noteout.link-nb-dir', None)
+    if link_nb_dir is None:
+        link_out_path = nb_path
+    else:
+        name = nb_path.split('/')[-1]
+        link_out_path = (name if link_nb_dir == '' else
+                            f'{link_nb_dir}/{name}')
+    url_nb_suffix = doc.get_metadata('noteout.url_nb_suffix', None)
+    url_nb_path = (link_out_path if url_nb_suffix is None else
+                    op.splitext(link_out_path)[0] + url_nb_suffix)
+    return ('<a class="interact-button" '
+            f'href="{interact_url}{url_nb_path}">Interact</a>\n')
 
 
 def get_header_footer(name, doc, nb_path):
     header = pf.convert_text(f'Start of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
-    interact_links = ''
-    interact_url = doc.get_metadata('noteout.interact-url')
-    nb_path = nb_path.replace(op.sep, '/')  # In URL form.
-    if interact_url:
-        link_nb_dir = doc.get_metadata('noteout.link-nb-dir', None)
-        if link_nb_dir is None:
-            link_out_path = nb_path
-        else:
-            name = nb_path.split('/')[-1]
-            link_out_path = (name if link_nb_dir == '' else
-                             f'{link_nb_dir}/{name}')
-        url_nb_suffix = doc.get_metadata('noteout.url_nb_suffix', None)
-        url_nb_path = (link_out_path if url_nb_suffix is None else
-                       op.splitext(link_out_path)[0] + url_nb_suffix)
-        interact_links = (
-            '<a class="interact-button" '
-            f'href="{interact_url}{url_nb_path}">Interact</a>\n')
+    interact_links = _get_interact_links(doc, nb_path)
     header.append(pf.RawBlock(
         f"""\
 <div class="nb-links">
