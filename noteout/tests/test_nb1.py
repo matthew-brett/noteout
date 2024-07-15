@@ -50,7 +50,7 @@ def test_nb1_notebook(nb1_doc, tmp_path):
         nb1_doc.metadata['noteout'] = {'nb-format': nb_format}
         nb1_doc.metadata['project'] = {'output-dir': str(tmp_path)}
         if nb_format == 'ipynb':
-            nb1_doc.metadata['noteout']['binder-url'] = (
+            nb1_doc.metadata['noteout']['interact-url'] = (
                 'https://mybinder.org/v2/gh/resampling-stats/'
                 'resampling-with/gh-pages?filepath=python-book/')
         nb_filtered = filter_doc(nb1_doc, nwnbs)

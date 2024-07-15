@@ -31,4 +31,4 @@ format:
 noteout:
   filter-divspans: ['r']
   nb-format: ipynb
-  binder-url: https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/
+  interact-url: https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/

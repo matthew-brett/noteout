@@ -124,7 +124,7 @@ def test_qbook_render(tmp_path):
     for lang in ('Python', 'R'):
         extra_config = {'noteout': {'pre-filter': ['comment']}}
         if lang == 'Python':
-            extra_config['binder-url'] = (
+            extra_config['interact-url'] = (
                 'https://mybinder.org/v2/gh/resampling-stats/'
                 'resampling-with/gh-pages?filepath=python-book/')
         params = make_new_book(tmp_path,
