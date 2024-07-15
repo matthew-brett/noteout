@@ -3,10 +3,12 @@
 """
 
 import os
+from pathlib import Path
 import os.path as op
 import re
 from copy import deepcopy
 from shutil import copyfile
+import zipfile
 
 import panflute as pf
 import jupytext as jpt
@@ -96,12 +98,19 @@ def find_data_files(nb):
 
 def write_data_files(data_files, out_dir):
     # Write any data files.
+    out_files = []
     for data_fname in data_files:
         data_out_fname = op.join(out_dir, data_fname)
         data_out_dir = op.dirname(data_out_fname)
         if not op.isdir(data_out_dir):
             os.makedirs(data_out_dir)
         copyfile(data_fname, data_out_fname)
+        out_files.append(data_out_fname)
+    return out_files
+
+
+def _reroot(fname, out_root):
+    return fname if out_root is None else op.relpath(fname, out_root)
 
 
 def write_notebook(name, elem, doc):
@@ -122,10 +131,11 @@ def write_notebook(name, elem, doc):
     nb = jpt.reads(proc_text(nb_md), 'Rmd')
     data_files = find_data_files(nb)
     jpt.write(nb, out_fname, fmt=out_fmt)  # Write notebook.
-    write_data_files(data_files, out_dir)  # Write associated data files.
-    # Return path relative to out_froot
-    return (out_fname if out_root is None else
-            op.relpath(out_fname, out_root))
+    # Write associated data files.
+    out_data_files = write_data_files(data_files, out_dir)
+    # Return notebook and data file paths relative to out_froot
+    return (_reroot(out_fname, out_root),
+            [_reroot(df, out_root) for df in out_data_files])
 
 
 def _get_interact_links(doc, nb_path):
@@ -147,21 +157,32 @@ def _get_interact_links(doc, nb_path):
             f'href="{interact_url}{url_nb_path}">Interact</a>\n')
 
 
-def get_header_footer(name, doc, nb_path):
+def get_header_footer(name, doc, nb_path, out_path, data_files):
     header = pf.convert_text(f'Start of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
     interact_links = _get_interact_links(doc, nb_path)
+    download_txt = (' notebook' if len(data_files) == 0 else
+                    (' zip with notebook + data file' +
+                     ('s' if len(data_files) > 1 else '')))
     header.append(pf.RawBlock(
         f"""\
 <div class="nb-links">
-<a class="notebook-link" href={nb_path}>Download notebook</a>
+<a class="notebook-link" href={out_path}>Download{download_txt}</a>
 {interact_links}</div>
 """))
     footer = pf.convert_text(f'End of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
     return header, footer
+
+
+def _write_zip(fnames):
+    out_zip_fname = Path(fnames[0]).with_suffix('.zip')
+    with zipfile.ZipFile(out_zip_fname, "w") as zf:
+        for fname in fnames:
+            zf.write(fname)
+    return out_zip_fname
 
 
 def action(elem, doc):
@@ -174,8 +195,9 @@ def action(elem, doc):
         raise RuntimeError('Need name attribute for notebook')
     stripped = deepcopy(elem)
     stripped.walk(strip_cells)
-    nb_path = write_notebook(name, stripped, doc)
-    header, footer = get_header_footer(name, doc, nb_path)
+    nb_path, df_paths = write_notebook(name, stripped, doc)
+    out_path = _write_zip([nb_path] + df_paths) if df_paths else nb_path
+    header, footer = get_header_footer(name, doc, nb_path, out_path, df_paths)
     elem.content = header + list(elem.content) + footer
     return elem
 
