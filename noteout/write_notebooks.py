@@ -11,6 +11,7 @@ from shutil import copyfile
 import zipfile
 
 import panflute as pf
+from panflute import Str, Strong, Space
 import jupytext as jpt
 
 
@@ -64,6 +65,30 @@ def finalize(doc):
     del doc.nb_format, doc.strip_header_nos, doc.nb_flatten_divspans
 
 
+def filter_callout_header(elem):
+    for node in elem.content:
+        if 'callout-title-container' in node.classes:
+            n0, = node.content
+            contents = [Str('Note:'), Space] + list(n0.content)
+            return [pf.Para(Strong(*contents))]
+    return []
+
+
+def filter_callout_note(elem):
+    header = []
+    body = []
+    for node in elem.content:
+        assert isinstance(node, pf.Div)
+        if 'callout-header' in node.classes:
+            header = filter_callout_header(node)
+        if 'callout-body-container' in node.classes:
+            body = list(node.content)
+    return header + body + (
+        [] if header is None else
+        [pf.Para(Strong(Str('End'), Space, Str('of'), Space, Str('note')))]
+    )
+
+
 def filter_out(elem):
     return [e for e in elem.content
             if 'cell-code' in getattr(e, 'classes', [])]
@@ -79,6 +104,8 @@ def strip_cells(elem, doc):
     # Replace various containers with their contents.
     if doc.nb_flatten_divspans.intersection(elem.classes):
         return list(elem.content)
+    if 'callout-note' in elem.classes:
+        return filter_callout_note(elem)
     # Drop cell div and all contents except code.
     if 'cell' not in elem.classes:
         return
