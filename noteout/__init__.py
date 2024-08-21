@@ -8,4 +8,4 @@ __version__ = '0.0.3a7'
 
 import panflute as _pf
 
-_pf.elements.RAW_BLOCKS.add('latex-merge')
+_pf.elements.RAW_FORMATS.add('latex-merge')
