@@ -11,7 +11,7 @@ import jupytext
 from noteout.filter_divspans import MetaFilter as nfds
 import noteout.write_notebooks as nwnbs
 
-from .tutils import (md2fmt, read_md, assert_json_equal, filter_doc)
+from .tutils import read_md, assert_json_equal, filter_doc
 
 import pytest
 
