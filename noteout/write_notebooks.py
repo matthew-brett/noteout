@@ -80,9 +80,13 @@ def prepare(doc):
         flat_ds.remove('+')
         flat_ds = flat_ds | DEFAULT_FLATTEN_DS
     doc.nb_flatten_divspans = flat_ds
+    doc.notebooks = []
+    doc.parse_state = 'before-notebook'
 
 
 def finalize(doc):
+    for nb in doc.notebooks:
+        write_notebook(nb)
     del doc.nb_format, doc.strip_header_nos, doc.nb_flatten_divspans
 
 
@@ -265,11 +269,27 @@ def _write_zip(fnames):
     return out_zip_fname
 
 
+def is_nb_start(elem):
+    return (isinstance(elem, pf.Div) and 'notebook-start' in elem.classes)
+
+
+def is_nb_end(elem):
+    return (isinstance(elem, pf.Div) and 'notebook-end' in elem.classes)
+
+
 def action(elem, doc):
-    if not isinstance(elem, pf.Div):
-        return
-    if not 'notebook' in elem.classes:
-        return
+    if doc.parse_state == 'before-notebook':
+        if is_nb_start(elem):
+            # Start new notebook, change state to in-notebook.
+            doc.parse_state = 'in-notebook'
+    elif doc.parse_state == 'in-notebook':
+        if is_nb_end(elem):
+            # Dump elements with metadata to doc metadata.
+            doc.parse_state = 'before-notebook'
+        else:
+            # Append element to notebook tree.
+            pass
+
     name = elem.attributes.get('name')
     if name is None:
         raise RuntimeError('Need name attribute for notebook')
