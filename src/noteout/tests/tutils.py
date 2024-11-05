@@ -1,8 +1,8 @@
 """ Test utilities
 """
 
-import json
 from copy import deepcopy
+import json
 
 import panflute as pf
 
@@ -27,11 +27,19 @@ def read_md(file_like, output_format='panflute'):
     return md2fmt(get_contents(file_like), output_format)
 
 
-def md2fmt(txt, fmt):
+def doc2json(doc):
+    return json.dumps(doc.to_json())
+
+
+def fmt2fmt(txt, in_fmt='markdown', out_fmt='gfm'):
     return pf.convert_text(txt,
-                           input_format='markdown',
-                           output_format=fmt,
+                           input_format=in_fmt,
+                           output_format=out_fmt,
                            standalone=True)
+
+
+def md2fmt(txt, out_fmt):
+    return fmt2fmt(txt, in_fmt='markdown', out_fmt=out_fmt)
 
 
 def assert_json_equal(doc1, doc2):
