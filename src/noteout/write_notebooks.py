@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
-""" Panflute filter to drop divs and spans
+""" Panflute filter to mark up text for notebook, then write notebooks.
 
-Rethinking the strategy.
+The first pass (pre-pass) does these steps:
 
-Do a first pass before Quarto filters (note_notebooks) that takes each notebook
-div and:
+* Flatten notebook divs.
+* Drop notes before and after flatted div.
+* The notes should suitably create Interact and Download buttons or the LaTeX
+  URL equivalents, depending on output format.
+* For the LaTeX / PDF output, the links should be absolute web links.  For
+  HTML, the links should be relative to the output page.
+* As well as the top-note, there should be a nb-only div with a link back to
+  the web version of the notebook.  This could be a link to the note label for
+  HTML output, but maybe we can omit this for the LaTeX case (because we won't
+  generally be generating the notebooks from the LaTeX build).
 
-* Drops a note marking the start of the notebook.
-* Takes the contents of the div and moves it down a level.
-* Drops a note marking the end of the notebook.
+Once done we go to the second pass.  This should:
 
-Then, in another pass, (write_notebooks) after the Quarto filters:
-
-* walk the tree.
-* when encountering a start notebook note, start recording elements.
-* when we hit a stop notebook note, stop recording elements.
-* Write out the corresonding notebook.
-
-This could be done by:
-
-* Writing a null filter that merely collects the notebooks.
-* A finalize method that writes the notebooks.
+* Do nothing to the main doc
+* For a copy of the main doc:
+  * Fix up callout blocks
+  * Flatten any divspans that need flattening 
+  (see `strip_cells`)
+  * Drop comment marks before and after notebooks.
+  * Output to GFM
+* With the GFM:
+  * Find notebooks using comment markers above.
+  * Write notebooks using GFM fragments.
 """
 
 import os
@@ -80,13 +85,9 @@ def prepare(doc):
         flat_ds.remove('+')
         flat_ds = flat_ds | DEFAULT_FLATTEN_DS
     doc.nb_flatten_divspans = flat_ds
-    doc.notebooks = []
-    doc.parse_state = 'before-notebook'
 
 
 def finalize(doc):
-    for nb in doc.notebooks:
-        write_notebook(nb)
     del doc.nb_format, doc.strip_header_nos, doc.nb_flatten_divspans
 
 
@@ -165,31 +166,6 @@ def _reroot(fname, out_root):
     return fname if out_root is None else op.relpath(fname, out_root)
 
 
-def get_nb_intro(doc, title):
-    quarto_params = doc.get_metadata('quarto-doc-params')
-    default = f'# {title}\n\n\n'
-    if quarto_params is None:
-        return default
-    if quarto_params.get('out_format') != 'html':
-        return default
-    output_page = Path(quarto_params.get('output_file'))
-    output_dir = Path(quarto_params.get('output_directory'))
-    rel_path = output_page.relative_to(output_dir)
-    return f'''\
----
-jupyter:
-  noteout:
-    html_page: {rel_path}
----
-
-# {title}
-
-
-[Notebook from {rel_path.stem}]({rel_path})\n
-
-'''
-
-
 def write_notebook(name, elem, doc):
     out_root = doc.get_metadata('project.output-dir')
     out_sdir = doc.get_metadata('noteout.nb-dir')
@@ -200,7 +176,7 @@ def write_notebook(name, elem, doc):
     if out_dir and not op.isdir(out_dir):
         os.makedirs(out_dir)
     title = elem.attributes.get('title', name2title(name))
-    nb_md = get_nb_intro(doc, title) + pf.convert_text(
+    nb_md = f'# {title}\n\n\n' + pf.convert_text(
         elem.content,
         input_format='panflute',
         output_format='gfm',
@@ -235,13 +211,9 @@ def _get_interact_links(doc, nb_path):
 
 
 def get_header_footer(name, doc, nb_path, out_path, data_files):
-    header = pf.convert_text(
-        f'''\
-:::{{#nte-nb_{name} .callout-note}}
-## {name}` notebook
-''',
-        input_format='markdown',
-        output_format='panflute')
+    header = pf.convert_text(f'Start of `{name}` notebook',
+                             input_format='markdown',
+                             output_format='panflute')
     interact_links = _get_interact_links(doc, nb_path)
     download_txt = (' notebook' if len(data_files) == 0 else
                     (' zip with notebook + data file' +
@@ -252,9 +224,6 @@ def get_header_footer(name, doc, nb_path, out_path, data_files):
 <a class="notebook-link" href={out_path}>Download{download_txt}</a>
 {interact_links}</div>
 """))
-    header.extend(pf.convert_text('\n:::\n\n',
-                                  input_format='markdown',
-                                  output_format='panflute'))
     footer = pf.convert_text(f'End of `{name}` notebook',
                              input_format='markdown',
                              output_format='panflute')
@@ -269,27 +238,11 @@ def _write_zip(fnames):
     return out_zip_fname
 
 
-def is_nb_start(elem):
-    return (isinstance(elem, pf.Div) and 'notebook-start' in elem.classes)
-
-
-def is_nb_end(elem):
-    return (isinstance(elem, pf.Div) and 'notebook-end' in elem.classes)
-
-
 def action(elem, doc):
-    if doc.parse_state == 'before-notebook':
-        if is_nb_start(elem):
-            # Start new notebook, change state to in-notebook.
-            doc.parse_state = 'in-notebook'
-    elif doc.parse_state == 'in-notebook':
-        if is_nb_end(elem):
-            # Dump elements with metadata to doc metadata.
-            doc.parse_state = 'before-notebook'
-        else:
-            # Append element to notebook tree.
-            pass
-
+    if not isinstance(elem, pf.Div):
+        return
+    if not 'notebook' in elem.classes:
+        return
     name = elem.attributes.get('name')
     if name is None:
         raise RuntimeError('Need name attribute for notebook')

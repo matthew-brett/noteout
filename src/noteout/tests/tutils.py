@@ -1,12 +1,10 @@
 """ Test utilities
 """
 
-import os
 import json
 from copy import deepcopy
 
 import panflute as pf
-import pytest
 
 
 def dump_json(d, fname):
@@ -26,9 +24,13 @@ def get_contents(file_like):
 
 
 def read_md(file_like, output_format='panflute'):
-    return pf.convert_text(get_contents(file_like),
+    return md2fmt(get_contents(file_like), output_format)
+
+
+def md2fmt(txt, fmt):
+    return pf.convert_text(txt,
                            input_format='markdown',
-                           output_format=output_format,
+                           output_format=fmt,
                            standalone=True)
 
 
@@ -44,11 +46,3 @@ def filter_doc(doc, filt_mod):
                   doc=copied)
     copied.metadata = {}
     return copied
-
-
-@pytest.fixture
-def in_tmp_path(tmp_path):
-    cwd = os.getcwd()
-    os.chdir(tmp_path)
-    yield tmp_path
-    os.chdir(cwd)

@@ -11,7 +11,7 @@ import jupytext
 from noteout.filter_divspans import MetaFilter as nfds
 import noteout.write_notebooks as nwnbs
 
-from .tutils import (read_md, assert_json_equal, filter_doc, in_tmp_path)
+from .tutils import (md2fmt, read_md, assert_json_equal, filter_doc)
 
 import pytest
 
@@ -19,10 +19,6 @@ DATA_DIR = Path(__file__).parent
 
 NB_NAMES = ('first_notebook', 'second_notebook')
 INB_NAMES = (nb + '.ipynb' for nb in NB_NAMES)
-
-@pytest.fixture
-def nb1_doc():
-    return read_md(DATA_DIR.joinpath('nb1.Rmd'))
 
 
 def test_nb1_strip(nb1_doc):
