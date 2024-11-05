@@ -54,3 +54,16 @@ def filter_doc(doc, filt_mod):
                   doc=copied)
     copied.metadata = {}
     return copied
+
+
+def check_contains(doc, checkfunc):
+    doc = deepcopy(doc)
+    doc.metadata['contains'] = False
+
+    def find(elem, doc):
+        if checkfunc(elem, doc):
+            doc.metadata['contains'] = True
+
+    doc.walk(find)
+
+    return doc.metadata['contains']

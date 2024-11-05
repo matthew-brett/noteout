@@ -238,10 +238,14 @@ def _write_zip(fnames):
     return out_zip_fname
 
 
-def action(elem, doc):
+def is_nb_div(elem):
     if not isinstance(elem, pf.Div):
-        return
-    if not 'notebook' in elem.classes:
+        return False
+    return 'notebook' in elem.classes
+
+
+def action(elem, doc):
+    if not is_nb_div(elem):
         return
     name = elem.attributes.get('name')
     if name is None:
