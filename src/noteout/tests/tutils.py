@@ -27,15 +27,18 @@ def read_md(file_like, output_format='panflute'):
     return md2fmt(get_contents(file_like), output_format)
 
 
-def doc2json(doc):
-    return json.dumps(doc.to_json())
+def doc2json(elem):
+    return json.dumps(elem.to_json())
 
 
-def fmt2fmt(txt, in_fmt='markdown', out_fmt='gfm'):
-    return pf.convert_text(txt,
-                           input_format=in_fmt,
-                           output_format=out_fmt,
-                           standalone=True)
+def fmt2fmt(inp, in_fmt=None, out_fmt='gfm'):
+    is_doc = hasattr(inp, 'to_json')
+    return pf.convert_text(
+        doc2json(inp) if is_doc else inp,
+        input_format=in_fmt if in_fmt else (
+            'json' if is_doc else 'markdown'),
+        output_format=out_fmt,
+        standalone=True)
 
 
 def md2fmt(txt, out_fmt):
@@ -66,4 +69,4 @@ def check_contains(doc, checkfunc):
 
     doc.walk(find)
 
-    return doc.metadata['contains']
+    return doc.get_metadata('contains')

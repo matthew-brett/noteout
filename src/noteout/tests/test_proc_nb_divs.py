@@ -1,6 +1,4 @@
-""" Test write notebooks
-
-The first pass (pre-pass) does these steps:
+""" Test processing of notebook divs.
 
 * Remove / flatten notebook divs.
 * Drop notes before and after flatted div.
@@ -16,7 +14,7 @@ The first pass (pre-pass) does these steps:
 
 import panflute as pf
 
-from noteout import filter_pre, filter_divspans, write_notebooks as wn
+from noteout import filter_pre, filter_divspans, proc_nb_divs as pnd
 
 from .tutils import (fmt2fmt, doc2json, read_md, assert_json_equal, filter_doc,
                      check_contains)
@@ -37,12 +35,8 @@ def filtered_nb1(nb1_doc):
 
 def test_first_pass(filtered_nb1):
     # Unfiltered does have notebook divs.
-    is_nb_div = lambda e, d: wn.is_nb_div(e)
+    is_nb_div = lambda e, d: pnd.is_nb_div(e)
     assert check_contains(filtered_nb1, is_nb_div)
-    out_doc = filter_doc(filtered_nb1, wn)
-    # assert not check_contains(out_doc, is_nb_div)
-    filtered_json = doc2json(filtered_nb1)
-    md = fmt2fmt(filtered_json, 'json', 'markdown')
-    # Check the basic conversion.
-    assert md.startswith('# A heading\n')
-    assert md.strip().endswith('\nEnd of page.')
+    # Filtered does not (it has been flattened).
+    out_doc = filter_doc(filtered_nb1, pnd)
+    assert not check_contains(out_doc, is_nb_div)
