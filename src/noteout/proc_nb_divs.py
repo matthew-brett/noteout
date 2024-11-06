@@ -14,6 +14,63 @@ The first pass (pre-pass) does these steps:
   HTML output, but maybe we can omit this for the LaTeX case (because we won't
   generally be generating the notebooks from the LaTeX build).
 
+For example, given::
+
+    Some text.
+
+    ::: {.notebook name="a_notebook" title='A notebook'}
+    Here, again, is a paragraph.
+
+    ```{r}
+    a <- 10
+    ```
+
+    More text.
+    :::
+
+The HTML output should be::
+
+    Some text.
+
+    :::{#nte-a_notebook .callout-note}
+    ## Notebook: A notebook
+
+    <div class="nb-links">
+    <a class="notebook-link" href=notebooks/a_notebook.Rmd>Download notebook</a>
+    <a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>\n')
+    </div>
+    :::
+    []{.nb-start}
+
+    ::: nb-only
+    Find this notebook on the web at @nte-a_notebook.
+    :::
+
+    Here, again, is a paragraph.
+
+    ```{r}
+    a <- 10
+    ```
+
+    More text.
+
+    []{.nb-end}
+    :::{.callout-note}
+    ## End of notebook: A notebook
+
+    The notebook (`a_notebook`) starts at @nte-a_notebook.
+    :::
+
+The LaTeX output (or when we don't know the output format) differs only in the
+interact and download links:
+
+    :::{#nte-a_notebook .callout-note}
+    ## Notebook: A notebook
+
+    * [Download notebook](https://resampling-stats.github.io/latest-r/notebooks/a_notebook.Rmd)
+    * [Interact](https://resampling-stats.github.io/latest-r/interact/lab/index.html?path=a_notebook.Rmd)
+    :::
+
 We have to do a first pass like this, before the Quarto filters, so Quarto can
 expand Quarto-specific stuff like cross-references inside the notebook text.
 """
