@@ -4,7 +4,7 @@
 from copy import deepcopy
 import json
 
-import panflute as pf
+from noteout.nutils import fmt2fmt
 
 
 def dump_json(d, fname):
@@ -16,33 +16,44 @@ def dump_json(d, fname):
         json.dump(d, fobj, indent=2)
 
 
+def check_contains(doc, checkfunc):
+    doc = deepcopy(doc)
+    doc.metadata['contains'] = False
+
+    def find(elem, doc):
+        if checkfunc(elem, doc):
+            doc.metadata['contains'] = True
+
+    doc.walk(find)
+
+    return doc.get_metadata('contains')
+
+
 def get_contents(file_like):
+    """ Read contents of file-like
+
+    Parameters
+    ----------
+    file_like : object
+        Object with `open` method, or `read` method.
+
+    Returns
+    -------
+    contents : str
+        Contents of `file_like`.
+    """
     if hasattr(file_like, 'open'):
         with file_like.open(encoding='utf-8') as fobj:
             return fobj.read()
     return file_like.read()
 
 
-def read_md(file_like, output_format='panflute'):
-    return md2fmt(get_contents(file_like), output_format)
-
-
-def doc2json(elem):
-    return json.dumps(elem.to_json())
-
-
-def fmt2fmt(inp, in_fmt=None, out_fmt='gfm'):
-    is_doc = hasattr(inp, 'to_json')
-    return pf.convert_text(
-        doc2json(inp) if is_doc else inp,
-        input_format=in_fmt if in_fmt else (
-            'json' if is_doc else 'markdown'),
-        output_format=out_fmt,
-        standalone=True)
-
-
 def md2fmt(txt, out_fmt):
     return fmt2fmt(txt, in_fmt='markdown', out_fmt=out_fmt)
+
+
+def read_md(file_like, output_format='panflute'):
+    return md2fmt(get_contents(file_like), output_format)
 
 
 def assert_json_equal(doc1, doc2):
@@ -57,16 +68,3 @@ def filter_doc(doc, filt_mod):
                   doc=copied)
     copied.metadata = {}
     return copied
-
-
-def check_contains(doc, checkfunc):
-    doc = deepcopy(doc)
-    doc.metadata['contains'] = False
-
-    def find(elem, doc):
-        if checkfunc(elem, doc):
-            doc.metadata['contains'] = True
-
-    doc.walk(find)
-
-    return doc.get_metadata('contains')

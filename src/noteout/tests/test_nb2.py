@@ -4,8 +4,9 @@
 import jupytext
 
 import noteout.write_notebooks as nwnbs
+from noteout.nutils import filter_doc
 
-from .tutils import md2fmt, filter_doc
+from .tutils import md2fmt
 
 
 def test_nb2_nb(in_tmp_path, nb2_text):

@@ -4,8 +4,9 @@
 from io import StringIO
 
 from noteout.filter_nb_only import NbonlyFilter as nnbo
+from noteout.nutils import filter_doc
 
-from .tutils import (read_md, assert_json_equal, filter_doc)
+from .tutils import read_md, assert_json_equal
 
 
 def test_nb_only():

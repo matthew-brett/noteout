@@ -2,10 +2,10 @@
 """ Panflute filter to drop divs, spans before rest of processing.
 """
 
-from noteout.filter_divspans import MetaFilter
+from noteout.filter_divspans import DivSpanFilter
 
 
-class PreFilter(MetaFilter):
+class PreFilter(DivSpanFilter):
 
     metadata_field = 'noteout.pre-filter'
 

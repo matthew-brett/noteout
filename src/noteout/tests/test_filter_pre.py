@@ -4,8 +4,9 @@
 from io import StringIO
 
 from noteout.filter_pre import PreFilter as nopf
+from noteout.nutils import filter_doc
 
-from .tutils import (read_md, assert_json_equal, filter_doc)
+from .tutils import read_md, assert_json_equal
 
 
 def test_filter_pre():

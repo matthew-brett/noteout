@@ -7,13 +7,13 @@ import re
 import panflute as pf
 from jupytext import cell_metadata as jcm
 
-from noteout.filter_nb_only import Filter
+from noteout.nutils import Filter
 
 
 CODE_CONFIG_RE = re.compile(r'^{(.*?)}')
 
 
-class MetaFilter(Filter):
+class CodeFilter(Filter):
 
     metadata_field = 'noteout.filter-langs'
 
@@ -42,7 +42,7 @@ class MetaFilter(Filter):
 
 
 def main(doc=None):
-    MetaFilter.main(doc=doc)
+    CodeFilter.main(doc=doc)
 
 
 if __name__ == "__main__":

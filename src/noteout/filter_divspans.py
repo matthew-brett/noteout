@@ -2,10 +2,10 @@
 """ Panflute filter to drop divs and spans
 """
 
-from noteout.filter_nb_only import Filter
+from noteout.nutils import Filter
 
 
-class MetaFilter(Filter):
+class DivSpanFilter(Filter):
 
     metadata_field = 'noteout.filter-divspans'
 
@@ -18,7 +18,7 @@ class MetaFilter(Filter):
 
 
 def main(doc=None):
-    MetaFilter.main(doc=doc)
+    DivSpanFilter.main(doc=doc)
 
 
 if __name__ == "__main__":

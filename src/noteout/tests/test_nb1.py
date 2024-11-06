@@ -8,10 +8,11 @@ from copy import deepcopy
 import panflute as pf
 import jupytext
 
-from noteout.filter_divspans import MetaFilter as nfds
+from noteout.filter_divspans import DivSpanFilter as nfds
 import noteout.write_notebooks as nwnbs
+from noteout.nutils import filter_doc
 
-from .tutils import read_md, assert_json_equal, filter_doc
+from .tutils import read_md, assert_json_equal
 
 import pytest
 
