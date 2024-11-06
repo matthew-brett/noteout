@@ -36,7 +36,7 @@ The HTML output should be::
     ## Notebook: A notebook
 
     <div class="nb-links">
-    <a class="notebook-link" href=notebooks/a_notebook.Rmd>Download notebook</a>
+    <a class="notebook-link" href="notebooks/a_notebook.Rmd">Download notebook</a>
     <a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>\n')
     </div>
     :::
@@ -114,8 +114,8 @@ def proc_nb_div(elem, doc):
     if doc.get_metadata('quarto-doc-params.out_format') == 'html':
         dl_inter_md = '''\
 <div class="nb-links">
-<a class="notebook-link" href={nb_dir}/{name}.{nb_format}>Download notebook</a>
-<a class="interact-button" href="{interact_url}{name}{url-nb-suffix}">Interact</a>\n')
+<a class="notebook-link" href="{nb-dir}/{name}.{nb-format}">Download notebook</a>
+<a class="interact-button" href="{interact-url}{name}{url-nb-suffix}">Interact</a>\n')
 </div>'''.format(**params)
     else:  # Generic format.
         dl_inter_md = '''\

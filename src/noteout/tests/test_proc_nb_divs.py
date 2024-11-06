@@ -16,7 +16,7 @@ from noteout import filter_pre, filter_divspans, proc_nb_divs as pnd
 
 from noteout.nutils import fmt2fmt, FilterError, filter_doc
 
-from .tutils import check_contains, filter_doc_nometa, assert_json_equal
+from .tutils import check_contains, filter_doc_nometa, assert_md_rt_equal
 
 import pytest
 
@@ -54,7 +54,7 @@ Some text.
 ## Notebook: A notebook
 
 <div class="nb-links">
-<a class="notebook-link" href=notebooks/a_notebook.Rmd>Download notebook</a>
+<a class="notebook-link" href="notebooks/a_notebook.Rmd">Download notebook</a>
 <a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>\n')
 </div>
 :::
@@ -76,7 +76,7 @@ More text.
 ::: {.callout-note}
 ## End of notebook: A notebook
 
-The notebook (`a_notebook`) starts at @nte-a_notebook.
+The notebook `a_notebook` starts at @nte-a_notebook.
 :::"""
 
 LATEX_RMD = """\
@@ -130,4 +130,8 @@ def test_examples():
     assert not check_contains(out_doc, is_nb_div)
     # When we don't know the output format (from the metadata), we get the
     # LaTeX version.
-    assert assert_json_equal(out_doc, fmt2fmt(LATEX_RMD, out_fmt='panflute'))
+    assert_md_rt_equal(out_doc, LATEX_RMD)
+    # Unless HTML specified.
+    in_doc.metadata['quarto-doc-params'] = {'out_format': 'html'}
+    out_doc_html = filter_doc_nometa(in_doc, pnd)
+    assert_md_rt_equal(out_doc_html, HTML_RMD)
