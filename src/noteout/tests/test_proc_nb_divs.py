@@ -12,13 +12,11 @@
   generally be generating the notebooks from the LaTeX build).
 """
 
-import panflute as pf
-
 from noteout import filter_pre, filter_divspans, proc_nb_divs as pnd
 
-from noteout.nutils import filter_doc, fmt2fmt
+from noteout.nutils import fmt2fmt, FilterError, filter_doc
 
-from .tutils import read_md, assert_json_equal, check_contains
+from .tutils import check_contains, filter_doc_nometa, assert_json_equal
 
 import pytest
 
@@ -29,19 +27,9 @@ def filtered_nb1(nb1_doc):
         'pre-filter': ['todo', 'comment'],
         'filter-divspans': ['python']}}
     nb1_doc.metadata = metadata
-    de_pre = filter_doc(nb1_doc, filter_pre.PreFilter)
+    de_pre = filter_doc_nometa(nb1_doc, filter_pre.PreFilter)
     de_pre.metadata = metadata
     return filter_doc(de_pre, filter_divspans.DivSpanFilter)
-
-
-def test_first_pass(filtered_nb1):
-    # Unfiltered does have notebook divs.
-    is_nb_div = lambda e, d: pnd.is_nb_div(e)
-    assert check_contains(filtered_nb1, is_nb_div)
-    # Filtered does not (it has been flattened).
-    out_doc = filter_doc(filtered_nb1, pnd)
-    assert not check_contains(out_doc, is_nb_div)
-
 
 
 INP_RMD = """\
@@ -62,7 +50,7 @@ More text.
 HTML_RMD = """\
 Some text.
 
-:::{#nte-a_notebook .callout-note}
+::: {#nte-a_notebook .callout-note}
 ## Notebook: A notebook
 
 <div class="nb-links">
@@ -85,7 +73,7 @@ More text.
 
 []{.nb-end}
 
-:::{.callout-note}
+::: {.callout-note}
 ## End of notebook: A notebook
 
 The notebook (`a_notebook`) starts at @nte-a_notebook.
@@ -94,7 +82,7 @@ The notebook (`a_notebook`) starts at @nte-a_notebook.
 LATEX_RMD = """\
 Some text.
 
-:::{#nte-a_notebook .callout-note}
+::: {#nte-a_notebook .callout-note}
 ## Notebook: A notebook
 
 * [Download notebook](https://resampling-stats.github.io/latest-r/notebooks/a_notebook.Rmd)
@@ -115,10 +103,10 @@ More text.
 
 []{.nb-end}
 
-:::{.callout-note}
+::: {.callout-note}
 ## End of notebook: A notebook
 
-The notebook (`a_notebook`) starts at @nte-a_notebook.
+The notebook `a_notebook` starts at @nte-a_notebook.
 :::"""
 
 
@@ -126,8 +114,20 @@ def test_examples():
     in_doc = fmt2fmt(INP_RMD, out_fmt='panflute')
     is_nb_div = lambda e, d: pnd.is_nb_div(e)
     assert check_contains(in_doc, is_nb_div)
-    out_doc = filter_doc(in_doc, pnd)
+    # We need to add the relevant metadata
+    with pytest.raises(FilterError):
+        filter_doc(in_doc, pnd)
+    # Some but not all
+    in_doc.metadata = {'noteout': {
+        'book-url-root': 'https://resampling-stats.github.io/latest-r',
+        'interact-url': "/interact/lab/index.html?path=",
+        'nb-dir': "notebooks"}}
+    with pytest.raises(FilterError):
+        filter_doc(in_doc, pnd)
+    # All
+    in_doc.metadata['noteout']['nb-format'] = 'Rmd'
+    out_doc = filter_doc_nometa(in_doc, pnd)
     assert not check_contains(out_doc, is_nb_div)
-    out_md = fmt2fmt(out_doc, out_fmt='markdown')
-    # When we don't know the output format, we get the LaTeX version.
-    # assert out_md == LATEX_RMD
+    # When we don't know the output format (from the metadata), we get the
+    # LaTeX version.
+    assert assert_json_equal(out_doc, fmt2fmt(LATEX_RMD, out_fmt='panflute'))

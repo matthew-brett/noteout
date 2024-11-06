@@ -7,6 +7,11 @@ import json
 import panflute as pf
 
 
+class FilterError(ValueError):
+    """ Exception for invalid values in filters
+    """
+
+
 class Filter:
     """ Class to contain standard functions for Panflute filter
 
