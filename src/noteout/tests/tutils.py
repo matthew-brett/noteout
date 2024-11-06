@@ -4,7 +4,7 @@
 from copy import deepcopy
 import json
 
-from noteout.nutils import fmt2fmt
+from noteout.nutils import fmt2fmt, filter_doc
 
 
 def dump_json(d, fname):
@@ -60,11 +60,7 @@ def assert_json_equal(doc1, doc2):
     assert doc1.to_json() == doc2.to_json()
 
 
-def filter_doc(doc, filt_mod):
-    copied = deepcopy(doc)
-    pf.run_filter(filt_mod.action,
-                  prepare=getattr(filt_mod, 'prepare', None),
-                  finalize=getattr(filt_mod, 'finalize', None),
-                  doc=copied)
-    copied.metadata = {}
-    return copied
+def filter_doc_nometa(doc, filt_container):
+    out = filter_doc(doc, filt_container)
+    out.metadata = {}
+    return out

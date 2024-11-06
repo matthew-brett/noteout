@@ -103,6 +103,4 @@ def filter_doc(doc, filt_container):
                   prepare=getattr(filt_container, 'prepare', None),
                   finalize=getattr(filt_container, 'finalize', None),
                   doc=copied)
-    # Reset metadata.
-    copied.metadata = {}
     return copied

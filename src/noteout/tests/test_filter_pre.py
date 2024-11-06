@@ -4,9 +4,8 @@
 from io import StringIO
 
 from noteout.filter_pre import PreFilter as nopf
-from noteout.nutils import filter_doc
 
-from .tutils import read_md, assert_json_equal
+from .tutils import read_md, assert_json_equal, filter_doc_nometa
 
 
 def test_filter_pre():
@@ -26,7 +25,7 @@ A comment
 Afterword.
 """
     doc = read_md(StringIO(content))
-    filtered = filter_doc(doc, nopf)
+    filtered = filter_doc_nometa(doc, nopf)
     assert_json_equal(filtered, doc)
     doc.metadata['noteout'] = {"pre-filter": ['todo', 'comment']}
     exp_content = """/
@@ -37,7 +36,7 @@ More text.
 Afterword.
 """
     exp_doc = read_md(StringIO(exp_content))
-    filtered = filter_doc(doc, nopf)
+    filtered = filter_doc_nometa(doc, nopf)
     assert_json_equal(filtered, exp_doc)
     doc.metadata['noteout'] = {"pre-filter": ['todo']}
     exp_content = """/
@@ -52,7 +51,7 @@ A comment
 Afterword.
 """
     exp_doc = read_md(StringIO(exp_content))
-    filtered = filter_doc(doc, nopf)
+    filtered = filter_doc_nometa(doc, nopf)
     assert_json_equal(filtered, exp_doc)
     doc.metadata['noteout'] = {"pre-filter": ['comment']}
     exp_content = """/
@@ -67,5 +66,5 @@ More text.
 Afterword.
 """
     exp_doc = read_md(StringIO(exp_content))
-    filtered = filter_doc(doc, nopf)
+    filtered = filter_doc_nometa(doc, nopf)
     assert_json_equal(filtered, exp_doc)
