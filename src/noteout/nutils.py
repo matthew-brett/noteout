@@ -77,12 +77,10 @@ def fmt2fmt(inp, in_fmt=None, out_fmt='gfm'):
     out : :class:`pf.Element` or str
         Output in Panflute or text format.
     """
-
-    is_doc = hasattr(inp, 'to_json')
     return pf.convert_text(
-        json.dumps(inp.to_json()) if is_doc else inp,
+        inp,
         input_format=in_fmt if in_fmt else (
-            'json' if is_doc else 'markdown'),
+            'panflute' if hasattr(inp, 'to_json') else 'markdown'),
         output_format=out_fmt,
         standalone=True)
 
