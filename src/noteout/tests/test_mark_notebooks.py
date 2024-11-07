@@ -58,7 +58,9 @@ Find this notebook on the web at @nte-a_notebook.
 
 Here, again, is a paragraph.
 
-`{r} a <- 10`
+```{r}
+a <- 10
+```
 
 More text.
 
