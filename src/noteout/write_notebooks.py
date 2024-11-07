@@ -1,31 +1,24 @@
 #!/usr/bin/env python3
-""" Panflute filter to mark up text for notebook, then write notebooks.
+""" Panflute filter to detect, process and write notebooks.
 
-The first pass (pre-pass) does these steps:
+See ``mark_notebooks.py`` for the overall structure of processing.
 
-* Flatten notebook divs.
-* Drop notes before and after flatted div.
-* The notes should suitably create Interact and Download buttons or the LaTeX
-  URL equivalents, depending on output format.
-* For the LaTeX / PDF output, the links should be absolute web links.  For
-  HTML, the links should be relative to the output page.
-* As well as the top-note, there should be a nb-only div with a link back to
-  the web version of the notebook.  This could be a link to the note label for
-  HTML output, but maybe we can omit this for the LaTeX case (because we won't
-  generally be generating the notebooks from the LaTeX build).
+This is the second of the three processing steps for notebooks.
 
-Once done we go to the second pass.  This should:
+In this step, we parse the start and end markers to find the notebooks, then
+write out the notebook files after suitable processing.
 
-* Do nothing to the main doc
-* For a copy of the main doc:
-  * Fix up callout blocks
-  * Flatten any divspans that need flattening 
-  (see `strip_cells`)
-  * Drop comment marks before and after notebooks.
-  * Output to GFM
-* With the GFM:
-  * Find notebooks using comment markers above.
-  * Write notebooks using GFM fragments.
+The suitable processing is:
+
+* Fix up callout blocks
+* Flatten any divspans that need flattening (see `strip_cells`)
+* Drop comment marks before and after notebooks.
+* Output to GFM
+
+We detect notebooks simply by starting notebooks after a start marker, and
+finishing before the end marker, using a flat search through the top level of
+tree.  But we also check that there are no start or end markers deeper in tree,
+and raise an error if so.
 """
 
 import os

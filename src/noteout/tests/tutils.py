@@ -2,6 +2,7 @@
 """
 
 from copy import deepcopy
+from functools import partial
 import json
 
 from noteout.nutils import fmt2fmt, filter_doc
@@ -60,9 +61,7 @@ def assert_json_equal(doc1, doc2):
     assert doc1.to_json() == doc2.to_json()
 
 
-def assert_md_rt_equal(doc1, doc2):
-    f = lambda d : fmt2fmt(d, out_fmt='markdown')
-    assert f(doc1) == f(doc2)
+fmt2md = partial(fmt2fmt, out_fmt='markdown')
 
 
 def filter_doc_nometa(doc, filt_container):

@@ -1,14 +1,26 @@
 #!/usr/bin/env python3
 """ Panflute filter to mark up text for notebooks.
 
-The first pass (pre-pass) does these steps:
+Filtering is in three stages (see below for why):
+
+* Replace notebook Pandoc divs with notebook start and end markers.  (Why?
+  Because the divs prevent Quarto from doing it's normal contents table.  And
+  because we want to drop #nte-my_notebook section markers which we can use to
+  reference the notebook).
+* (At some point, run the Quarto filters, then):
+* Parse the start and end markers to find the notebooks, then write out the
+  notebook files after suitable processing.
+* In a last step, work out which notebooks have data files associated, write
+  out zips for download of notebooks with data files, and drop interact and
+  download links into the originating document.   (We have to do this last step
+  separately because we don't know what the download links should link to until
+  we know whether the notebooks have data files, and should therefore be
+  ``.zip`` download links instead of notebook download links).
+
+This first pass does these steps:
 
 * Flatten notebook divs.
 * Drop in Quarto notes before and after flatted div.
-* The notes should suitably create Interact and Download buttons or the LaTeX
-  URL equivalents, depending on output format.
-* For the LaTeX / PDF output, the links should be absolute web links.  For
-  HTML, the links should be relative to the output page.
 * As well as the top-note, there should be a nb-only div with a link back to
   the web version of the notebook.  This could be a link to the note label for
   HTML output, but maybe we can omit this for the LaTeX case (because we won't
@@ -28,19 +40,13 @@ For example, given::
     More text.
     :::
 
-The HTML output should be::
+The output should be::
 
     Some text.
 
-    ::: {#nte-a_notebook .callout-note}
+    ::: {#nte-a_notebook .callout-note, name="a_notebook", title="A notebook"}
     ## Notebook: A notebook
-
-    <div class="nb-links">
-    <a class="notebook-link" href="notebooks/a_notebook.Rmd">Download notebook</a>
-    <a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>\n')
-    </div>
     :::
-    []{.nb-start}
 
     ::: nb-only
     Find this notebook on the web at @nte-a_notebook.
@@ -54,46 +60,26 @@ The HTML output should be::
 
     More text.
 
-    []{.nb-end}
-    ::: {.callout-note}
+    ::: {.callout-note .end-nb}
     ## End of notebook: A notebook
 
     The notebook (`a_notebook`) starts at @nte-a_notebook.
     :::
 
-The LaTeX output (or when we don't know the output format) differs only in the
-interact and download links:
-
-    ::: {#nte-a_notebook .callout-note}
-    ## Notebook: A notebook
-
-    * [Download notebook](https://resampling-stats.github.io/latest-r/notebooks/a_notebook.Rmd)
-    * [Interact](https://resampling-stats.github.io/latest-r/interact/lab/index.html?path=a_notebook.Rmd)
-    :::
-
 We have to do a first pass like this, before the Quarto filters, so Quarto can
-expand Quarto-specific stuff like cross-references inside the notebook text.
+expand Quarto-specific stuff such cross-references inside the notebook text.
 """
 
 import panflute as pf
 
 from noteout.nutils import fmt2fmt, FilterError
 
-_REQUIRED_NOTEOUT_KEYS = ('book-url-root', 'nb-dir', 'nb-format')
-
-
 def prepare(doc):
-    params = doc.get_metadata('noteout', {})
-    for key in _REQUIRED_NOTEOUT_KEYS:
-        if not key in params:
-            raise FilterError(f'noteout.{key} must be defined in metadata')
-    if params.get('url-nb-suffix') is None:
-        params['url-nb-suffix'] = '.' + params.get('nb-format', 'ipynb')
-    doc._params = params
+    pass
 
 
 def finalize(doc):
-    del doc._params
+    pass
 
 
 def is_nb_div(elem):
@@ -106,38 +92,20 @@ def proc_nb_div(elem, doc):
     name = elem.attributes.get('name')
     if name is None:
         raise FilterError('Need name attribute for notebook')
-    params = doc._params.copy()
-    params.update({
+    params = {
         'name': name,
         'title': elem.attributes.get('title', name2title(name))
-    })
-    if doc.get_metadata('quarto-doc-params.out_format') == 'html':
-        dl_inter_md = '''\
-<div class="nb-links">
-<a class="notebook-link" href="{nb-dir}/{name}.{nb-format}">Download notebook</a>
-<a class="interact-button" href="{interact-url}{name}{url-nb-suffix}">Interact</a>\n')
-</div>'''.format(**params)
-    else:  # Generic format.
-        dl_inter_md = '''\
-* [Download notebook]({book-url-root}/{nb-dir}/{name}.{nb-format})
-* [Interact]({book-url-root}{interact-url}{name}{url-nb-suffix})
-'''.format(**params)
+    }
     header = '''\
-::: {{#nte-{name} .callout-note}}
+::: {{#nte-{name} .callout-note name="{name}" title="{title}"}}
 ## Notebook: {title}
-
-{dl_inter_md}
 :::
-
-[]{{.nb-start}}
 
 ::: nb-only
 Find this notebook on the web at @nte-{name}.
 :::
-'''.format(**{'dl_inter_md': dl_inter_md, **params})
+'''.format(**params)
     footer = '''\
-[]{{.nb-end}}
-
 ::: {{.callout-note}}
 ## End of notebook: {title}
 
