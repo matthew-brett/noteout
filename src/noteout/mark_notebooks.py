@@ -72,7 +72,7 @@ expand Quarto-specific stuff such cross-references inside the notebook text.
 
 import panflute as pf
 
-from noteout.nutils import fmt2fmt, FilterError
+from noteout.nutils import fmt2fmt, FilterError, is_div_class, name2title
 
 def prepare(doc):
     pass
@@ -83,9 +83,7 @@ def finalize(doc):
 
 
 def is_nb_div(elem):
-    if not isinstance(elem, pf.Div):
-        return False
-    return 'notebook' in elem.classes
+    return is_div_class(elem, 'notebook')
 
 
 def proc_nb_div(elem, doc):
@@ -113,10 +111,6 @@ The notebook `{name}` starts at @nte-{name}.
 :::'''.format(**params)
     return (fmt2fmt(header, out_fmt='panflute').content,
             fmt2fmt(footer, out_fmt='panflute').content)
-
-
-def name2title(name):
-    return name.replace('_', ' ').capitalize()
 
 
 def action(elem, doc):

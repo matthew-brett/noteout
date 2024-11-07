@@ -108,3 +108,15 @@ def filter_doc(doc, filt_container):
                   finalize=getattr(filt_container, 'finalize', None),
                   doc=copied)
     return copied
+
+
+def is_div_class(elem, class_name):
+    """ True if `elem` is a div, and has class `class_name`
+    """
+    if not isinstance(elem, pf.Div):
+        return False
+    return class_name in elem.classes
+
+
+def name2title(name):
+    return name.replace('_', ' ').capitalize()
