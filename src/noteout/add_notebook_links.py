@@ -35,6 +35,8 @@ def prepare(doc):
             raise FilterError(f'noteout.{key} must be defined in metadata')
     if params.get('url-nb-suffix') is None:
         params['url-nb-suffix'] = '.' + params.get('nb-format', 'ipynb')
+    params['out_format' = doc.get_metadata('quarto-doc-params.out_format')
+    params['nb_out_path'] = 
     doc._params = params
 
 

@@ -75,7 +75,7 @@ The notebook `a_notebook` starts at @nte-a_notebook.
 :::"""
 
 
-def test_examples():
+def test_examples(tmp_path):
     in_doc = fmt2fmt(MARKED_RMD, out_fmt='panflute')
     # We need to add the relevant metadata
     with pytest.raises(FilterError):
