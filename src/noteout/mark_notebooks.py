@@ -97,7 +97,7 @@ def proc_nb_div(elem, doc):
         'title': elem.attributes.get('title', name2title(name))
     }
     header = '''\
-::: {{#nte-{name} .callout-note name="{name}" title="{title}"}}
+::: {{#nte-{name} .callout-note .nb-start name="{name}" title="{title}"}}
 ## Notebook: {title}
 :::
 
@@ -106,7 +106,7 @@ Find this notebook on the web at @nte-{name}.
 :::
 '''.format(**params)
     footer = '''\
-::: {{.callout-note}}
+::: {{.callout-note .nb-end}}
 ## End of notebook: {title}
 
 The notebook `{name}` starts at @nte-{name}.

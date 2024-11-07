@@ -2,7 +2,6 @@
 """
 
 from copy import deepcopy
-import json
 
 import panflute as pf
 

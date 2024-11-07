@@ -17,3 +17,21 @@ download links instead of notebook download links).
 * For the LaTeX / PDF output, the links should be absolute web links.  For
   HTML, the links should be relative to the output page.
 """
+
+import panflute as pf
+
+from noteout.nutils import FilterError
+
+
+def matching_ds_classes(elem, classes):
+    if not isinstance(elem, pf.Div):
+        return set()
+    return set(classes).intersection(elem.classes)
+
+
+def action(elem, doc):
+    if not (matches := matching_ds_classes(elem, ('.nb-start', '.nb-end'))):
+        return
+    if len(matches) != 1:
+        raise FilterError('Too many matching classes: ' + ', '.join(matches))
+    match = matches.pop()
