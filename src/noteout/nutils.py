@@ -57,7 +57,7 @@ class Filter:
                              doc=doc)
 
 
-def fmt2fmt(inp, in_fmt=None, out_fmt='gfm'):
+def fmt2fmt(inp, in_fmt=None, out_fmt='gfm', standalone=True):
     """ Convert doc `inp` in one Pandoc / Panflute format to another
 
     Parameters
@@ -70,6 +70,8 @@ def fmt2fmt(inp, in_fmt=None, out_fmt='gfm'):
         to `markdown`.
     in_fmt : str, optional
         Output format.
+    standalone : {True, False}, optional
+        Whether to generate standalone doc.
 
     Returns
     -------
@@ -81,7 +83,7 @@ def fmt2fmt(inp, in_fmt=None, out_fmt='gfm'):
         input_format=in_fmt if in_fmt else (
             'panflute' if hasattr(inp, 'to_json') else 'markdown'),
         output_format=out_fmt,
-        standalone=True)
+        standalone=standalone)
 
 
 def filter_doc(doc, filt_container):

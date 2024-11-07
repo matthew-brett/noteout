@@ -159,6 +159,13 @@ def _reroot(fname, out_root):
     return fname if out_root is None else op.relpath(fname, out_root)
 
 
+def matching_ds_classes(elem, classes):
+    if not isinstance(elem, pf.Div):
+        return set()
+    return set(classes).intersection(elem.classes)
+
+
+
 def write_notebook(name, elem, doc):
     out_root = doc.get_metadata('project.output-dir')
     out_sdir = doc.get_metadata('noteout.nb-dir')

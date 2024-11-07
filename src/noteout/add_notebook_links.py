@@ -18,20 +18,58 @@ download links instead of notebook download links).
   HTML, the links should be relative to the output page.
 """
 
+from pathlib import Path
+
 import panflute as pf
 
-from noteout.nutils import FilterError
+from noteout.nutils import FilterError, fmt2fmt
+
+_REQUIRED_NOTEOUT_KEYS = ('book-url-root', 'nb-dir', 'nb-format')
+_REQUIRED_MARKER_KEYS = ('name', 'title')
 
 
-def matching_ds_classes(elem, classes):
-    if not isinstance(elem, pf.Div):
-        return set()
-    return set(classes).intersection(elem.classes)
+def prepare(doc):
+    params = doc.get_metadata('noteout', {})
+    for key in _REQUIRED_NOTEOUT_KEYS:
+        if not key in params:
+            raise FilterError(f'noteout.{key} must be defined in metadata')
+    if params.get('url-nb-suffix') is None:
+        params['url-nb-suffix'] = '.' + params.get('nb-format', 'ipynb')
+    doc._params = params
+
+
+def finalize(doc):
+    del doc._params
+
+
+def get_process_nb(elem, doc):
+    return Path('foo.ipynb')
+
+
+def get_nb_links(elem, doc, dl_suffix):
+    params = doc._params.copy()
+    params.update(elem.attributes)
+    if doc.get_metadata('quarto-doc-params.out_format') == 'html':
+        txt = '''\
+<div class="nb-links">
+<a class="notebook-link" href="{nb-dir}/{name}.{nb-format}">Download notebook</a>
+<a class="interact-button" href="{interact-url}{name}{url-nb-suffix}">Interact</a>\n')
+</div>'''.format(**params)
+    else:  # Generic format.
+        txt = '''\
+* [Download notebook]({book-url-root}/{nb-dir}/{name}.{nb-format})
+* [Interact]({book-url-root}{interact-url}{name}{url-nb-suffix})
+'''.format(**params)
+    return fmt2fmt(txt, out_fmt='panflute').content
 
 
 def action(elem, doc):
-    if not (matches := matching_ds_classes(elem, ('.nb-start', '.nb-end'))):
+    if not isinstance(elem, pf.Div) or 'nb-start' not in elem.classes:
         return
-    if len(matches) != 1:
-        raise FilterError('Too many matching classes: ' + ', '.join(matches))
-    match = matches.pop()
+    for key in _REQUIRED_MARKER_KEYS:
+        if not key in elem.attributes:
+            raise FilterError(f'{key} must be defined in nb-start element')
+    nb_pth = get_process_nb(elem, doc)
+    elem.content = (list(elem.content) +
+                    list(get_nb_links(elem, doc, nb_pth.suffix)))
+    return elem
