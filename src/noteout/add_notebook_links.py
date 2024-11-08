@@ -167,3 +167,14 @@ def action(elem, doc):
     elem.content = (list(elem.content) +
                     list(get_nb_links(elem, doc, dl_path, n_dfs)))
     return elem
+
+
+def main(doc=None):
+    return pf.run_filter(action,
+                         prepare=prepare,
+                         finalize=finalize,
+                         doc=doc)
+
+
+if __name__ == "__main__":
+    main()
