@@ -27,7 +27,8 @@ import panflute as pf
 
 from noteout.nutils import FilterError, fmt2fmt
 
-_REQUIRED_NOTEOUT_KEYS = ('book-url-root', 'nb-dir', 'nb-format')
+_REQUIRED_NOTEOUT_KEYS = ('book-url-root', 'nb-dir', 'nb-format',
+                          'interact-url')
 _REQUIRED_MARKER_KEYS = ('name', 'title')
 
 # Find data read

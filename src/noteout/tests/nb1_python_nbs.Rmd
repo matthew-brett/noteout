@@ -2,21 +2,26 @@
 
 Some text. More than one line.
 
-::: {.notebook name="first_notebook"}
-Start of `first_notebook` notebook
+::: {#nte-first_notebook .callout-note .nb-start name="first_notebook" title="First notebook"}
+## Notebook: First notebook
 
-```{=html}
-<div class="nb-links">
-<a class="notebook-link" href=first_notebook.ipynb>Download notebook</a>
-<a class="interact-button" href="https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/first_notebook.ipynb">Interact</a>
-</div>
-```
+-   [Download
+    notebook](https://example.com/notebooks/first_notebook.ipynb)
+-   [Interact](https://example.com/https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/first_notebook.ipynb)
+:::
+
+::: nb-only
+Find this notebook on the web at @nte-first_notebook.
+:::
 
 Here is a paragraph.
 
 And another.
 
-End of `first_notebook` notebook
+::: {.callout-note .nb-end}
+## End of notebook: First notebook
+
+`first_notebook` starts at @nte-first_notebook.
 :::
 
 More text.
@@ -42,21 +47,26 @@ Continues.
 
 Then we write: [more R]{.r}.
 
-::: {.notebook name="second_notebook"}
-Start of `second_notebook` notebook
+::: {#nte-second_notebook .callout-note .nb-start name="second_notebook" title="Second notebook"}
+## Notebook: Second notebook
 
-```{=html}
-<div class="nb-links">
-<a class="notebook-link" href=second_notebook.ipynb>Download notebook</a>
-<a class="interact-button" href="https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/second_notebook.ipynb">Interact</a>
-</div>
-```
+-   [Download
+    notebook](https://example.com/notebooks/second_notebook.ipynb)
+-   [Interact](https://example.com/https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/second_notebook.ipynb)
+:::
+
+::: nb-only
+Find this notebook on the web at @nte-second_notebook.
+:::
 
 Here, again, is a paragraph.
 
 And, again, another.
 
-End of `second_notebook` notebook
+::: {.callout-note .nb-end}
+## End of notebook: Second notebook
+
+`second_notebook` starts at @nte-second_notebook.
 :::
 
 End of page.

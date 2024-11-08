@@ -19,9 +19,12 @@ DATA_DIR = Path(__file__).parent
 
 NB_NAMES = ('first_notebook', 'second_notebook')
 INB_NAMES = (nb + '.ipynb' for nb in NB_NAMES)
-DEF_NOTEOUT =  {'nb-format': 'Rmd',
-                'nb-dir': 'notebooks',
-                'book-url-root': 'https://example.com'}
+DEF_NOTEOUT =  {
+    'nb-format': 'Rmd',
+    'nb-dir': 'notebooks',
+    'book-url-root': 'https://example.com',
+    'interact-url': 'https://mybinder.org/v2/gh/resampling-stats/'
+    'resampling-with/gh-pages?filepath=python-book/'}
 
 
 def test_nb1_strip(nb1_doc):
@@ -60,7 +63,8 @@ def test_nb1_notebook(nb1_doc, in_tmp_path):
                            'markdown')
         assert actual == expected
         for nb_name in NB_NAMES:
-            assert (in_tmp_path / f'{nb_name}.{nb_format}').exists()
+            assert (in_tmp_path / 'notebooks' /
+                    f'{nb_name}.{nb_format}').exists()
 
 
 NB_EXPECTED = {'first_notebook': """\
