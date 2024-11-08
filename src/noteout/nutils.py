@@ -110,12 +110,14 @@ def filter_doc(doc, filt_container):
     return copied
 
 
-def is_div_class(elem, class_name):
-    """ True if `elem` is a div, and has class `class_name`
+def is_div_class(elem, class_names):
+    """ True if `elem` is a div, and has classes in `class_names`
     """
+    if isinstance(class_names, str):
+        class_names = [class_names]
     if not isinstance(elem, pf.Div):
         return False
-    return class_name in elem.classes
+    return set(class_names).intersection(elem.classes)
 
 
 def name2title(name):

@@ -16,17 +16,16 @@ The suitable processing is:
 * Output to GFM
 
 We detect notebooks simply by starting notebooks after a start marker, and
-finishing before the end marker, using a flat search through the top level of
-tree.  But we also check that there are no start or end markers deeper in tree,
-and raise an error if so.
+finishing before the end marker, using a search through the top level of
+tree, and any divs contained therein.
 """
 
 from pathlib import Path
 import re
 
-import panflute as pf
-from panflute import Str, Strong, Space, ListContainer
 import jupytext as jpt
+import panflute as pf
+from panflute import Str, Strong, Space
 
 from noteout.nutils import is_div_class, FilterError, name2title, fmt2fmt
 
@@ -50,7 +49,7 @@ def proc_text(nb_text):
     return FENCE_START_RE.sub(r'```{\1}', txt)
 
 
-def prepare(doc):
+def get_params(doc):
     params = doc.get_metadata('noteout', {})
     for key in _REQUIRED_NOTEOUT_KEYS:
         if not key in params:
@@ -58,14 +57,13 @@ def prepare(doc):
     qdp = doc.get_metadata('quarto-doc-params', {})
     params['out_path'] = Path(qdp.get('output_directory', '.'))
     params['nb_out_path'] = params['out_path'] / params['nb-dir']
-    doc._params = params
-    params['strip_header_nos'] = params.get('strip-header-nos', True)
+    params['strip-header-nos'] = params.get('strip-header-nos', True)
     flat_ds = set(params.get('nb-flatten-divspans', DEFAULT_FLATTEN_DS))
     if '+' in flat_ds:
         flat_ds.remove('+')
         flat_ds = flat_ds | DEFAULT_FLATTEN_DS
     params['nb-flatten-divspans'] = flat_ds
-    doc._params = params
+    return params
 
 
 def filter_callout_header(elem):
@@ -98,10 +96,10 @@ def filter_out(elem):
 
 
 def strip_cells(elem, doc):
-    params = doc._params
+    params = doc._wnb_params
     if not isinstance(elem, (pf.Div, pf.Span)):
         return
-    if (params['strip_header_nos'] and
+    if (params['strip-header-nos'] and
         isinstance(elem, pf.Span) and
         'header-section-number' in elem.classes):
         return []
@@ -116,15 +114,13 @@ def strip_cells(elem, doc):
     return filter_out(elem)
 
 
-def find_notebooks(elem, doc=None):
-    doc = elem if doc is None else doc
+def find_notebooks(elem):
     state = 'before-nb'
     nbs = []
-    p = doc._params
     for elem in elem.content:
         # Recursive search for notebooks in divs.
         if isinstance(elem, pf.Div):
-            nbs += find_notebooks(elem, doc)
+            nbs += find_notebooks(elem)
         if state == 'before-nb':
             if is_div_class(elem, 'nb-start'):
                 state = 'in-nb'
@@ -135,11 +131,9 @@ def find_notebooks(elem, doc=None):
             if is_div_class(elem, 'nb-end'):
                 state = 'before-nb'
                 d = pf.Doc(*nb)
-                d._params = p.copy()
                 nbs.append([attrs, d])
                 continue
             nb.append(elem)
-        # Perhaps check deeper elements for nb-start, nb-end
     if state != 'before-nb':
         raise FilterError('No `nb-end` found for last notebook')
     return nbs
@@ -150,30 +144,29 @@ def write_notebook(nb_doc, attrs):
         raise FilterError('Need name in notebook attributes')
     if 'title' not in attrs:
         attrs['title'] = name2title(attrs['name'])
-    p = nb_doc._params.copy()
-    p.update(attrs)
-    out_nb_fname = p['nb_out_path'] / '{name}.{nb-format}'.format(**p)
+    out_nb_fname = attrs['nb_out_path'] / '{name}.{nb-format}'.format(**attrs)
     out_nb_fname.parent.mkdir(parents=True, exist_ok=True)
-    nb_md = ('# {title}\n\n\n'.format(**p) +
+    nb_md = ('# {title}\n\n\n'.format(**attrs) +
              fmt2fmt(nb_doc, in_fmt='panflute'))
     nb = jpt.reads(proc_text(nb_md), 'Rmd')
-    jpt.write(nb, out_nb_fname, fmt=p['nb-format'])
+    jpt.write(nb, out_nb_fname, fmt=attrs['nb-format'])
+
+
+def finalize(doc):
+    params = get_params(doc)
+    for attrs, nb_doc in find_notebooks(doc):
+        nb_doc._wnb_params = params  # for strip_cells
+        nb_out = nb_doc.walk(strip_cells)
+        write_notebook(nb_out, {**attrs, **params})
 
 
 def action(elem, doc):
     pass
 
 
-def finalize(doc):
-    for attrs, nb_doc in find_notebooks(doc):
-        nb_out = nb_doc.walk(strip_cells)
-        write_notebook(nb_out, attrs)
-    del doc._params
-
-
 def main(doc=None):
-    return pf.run_filter(action,
-                         prepare=prepare,
+    return pf.run_filter(action=action,
+                         prepare=None,
                          finalize=finalize,
                          doc=doc)
 
