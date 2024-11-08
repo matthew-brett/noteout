@@ -6,6 +6,9 @@ from functools import partial
 import json
 
 from noteout.nutils import fmt2fmt, filter_doc
+import noteout.mark_notebooks as nmnb
+import noteout.export_notebooks as nenb
+import noteout.add_notebook_links as nanbL
 
 
 def dump_json(d, fname):
@@ -68,3 +71,10 @@ def filter_doc_nometa(doc, filt_container):
     out = filter_doc(doc, filt_container)
     out.metadata = {}
     return out
+
+
+def filter_three_pass(doc):
+    for filt in (nmnb, nenb, nanbL):
+        doc = filter_doc(doc, filt)
+    doc.metadata = {}
+    return doc

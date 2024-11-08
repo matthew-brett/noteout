@@ -63,7 +63,7 @@ The output should be::
     ::: {.callout-note .end-nb}
     ## End of notebook: A notebook
 
-    The notebook (`a_notebook`) starts at @nte-a_notebook.
+    `a_notebook` starts at @nte-a_notebook.
     :::
 
 We have to do a first pass like this, before the Quarto filters, so Quarto can
@@ -107,7 +107,7 @@ Find this notebook on the web at @nte-{name}.
 ::: {{.callout-note .nb-end}}
 ## End of notebook: {title}
 
-The notebook `{name}` starts at @nte-{name}.
+`{name}` starts at @nte-{name}.
 :::'''.format(**params)
     return (fmt2fmt(header, out_fmt='panflute').content,
             fmt2fmt(footer, out_fmt='panflute').content)
