@@ -116,10 +116,21 @@ def strip_cells(elem, doc):
     return filter_out(elem)
 
 
-def find_notebooks(doc):
+def find_all_notebooks(doc):
+    """ Search for notebooks at first and divs at second level.
+    """
+    nbs = find_notebooks(doc, doc)
+    for elem in doc.content:
+        if isinstance(elem, pf.Div):
+            nbs += find_notebooks(elem, doc)
+    return nbs
+
+
+def find_notebooks(elem, doc):
     state = 'before-nb'
     nbs = []
-    for elem in doc.content:
+    p = doc._params
+    for elem in elem.content:
         if state == 'before-nb':
             if is_div_class(elem, 'nb-start'):
                 state = 'in-nb'
@@ -130,7 +141,7 @@ def find_notebooks(doc):
             if is_div_class(elem, 'nb-end'):
                 state = 'before-nb'
                 d = pf.Doc(*nb)
-                d._params = doc._params.copy()
+                d._params = p.copy()
                 nbs.append([attrs, d])
                 continue
             nb.append(elem)
@@ -160,7 +171,7 @@ def action(elem, doc):
 
 
 def finalize(doc):
-    for attrs, nb_doc in find_notebooks(doc):
+    for attrs, nb_doc in find_all_notebooks(doc):
         nb_out = nb_doc.walk(strip_cells)
         write_notebook(nb_out, attrs)
     del doc._params
