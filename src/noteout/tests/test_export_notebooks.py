@@ -8,7 +8,7 @@ Here we are doing the second step of three.
 
 from pathlib import Path
 
-import noteout.write_notebooks as wnb
+import noteout.export_notebooks as enb
 
 from noteout.nutils import fmt2fmt, FilterError, filter_doc
 
@@ -22,14 +22,14 @@ def test_basic(in_tmp_path):
     in_doc = fmt2fmt(MARKED_RMD, out_fmt='panflute')
     # We need to add the relevant metadata
     with pytest.raises(FilterError, match='noteout.nb-dir must be defined'):
-        filter_doc(in_doc, wnb)
+        filter_doc(in_doc, enb)
     # Some but not all.
     in_doc.metadata = {'noteout': {'nb-dir': "notebooks"}}
     with pytest.raises(FilterError, match='noteout.nb-format must be defined'):
-        filter_doc(in_doc, wnb)
+        filter_doc(in_doc, enb)
     # All, filter works.
     in_doc.metadata['noteout']['nb-format'] = 'Rmd'
-    out_doc = filter_doc(in_doc, wnb)
+    out_doc = filter_doc(in_doc, enb)
     # We don't modify the input document.
     assert fmt2md(out_doc) == fmt2md(in_doc)
     # We do write out a notebook.

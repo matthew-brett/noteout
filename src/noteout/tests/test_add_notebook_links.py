@@ -44,7 +44,7 @@ More text.
 ::: {.callout-note .nb-end}
 ## End of notebook: This is a notebook
 
-The notebook `a_notebook` starts at @nte-a_notebook.
+`a_notebook` starts at @nte-a_notebook.
 :::"""
 
 HTML_RMD = """\
@@ -74,7 +74,7 @@ More text.
 ::: {.callout-note .nb-end}
 ## End of notebook: This is a notebook
 
-The notebook `a_notebook` starts at @nte-a_notebook.
+`a_notebook` starts at @nte-a_notebook.
 :::"""
 
 
