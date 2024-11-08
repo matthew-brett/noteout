@@ -55,7 +55,7 @@ Some text.
 
 <div class="nb-links">
 <a class="notebook-link" href="notebooks/a_notebook.Rmd">Download notebook</a>
-<a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>\n')
+<a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>
 </div>
 :::
 

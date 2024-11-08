@@ -148,7 +148,7 @@ def get_nb_links(elem, doc, dl_path, n_dfs):
         txt = '''\
 <div class="nb-links">
 <a class="notebook-link" href="{dl_fname}">Download {dl_txt}</a>
-<a class="interact-button" href="{inter_url}">Interact</a>\n')
+<a class="interact-button" href="{inter_url}">Interact</a>
 </div>'''.format(**params)
     else:  # Generic format.
         txt = '''\
