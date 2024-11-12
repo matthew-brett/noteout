@@ -48,8 +48,12 @@ More text.
 OUT_RMD = """\
 Some text.
 
-::: {#nte-a_notebook .callout-note .nb-start name="a_notebook" title="This is a notebook"}
+::: {#nte-a_notebook .callout-note}
 ## Notebook: This is a notebook
+:::
+
+::: {.nb-start name="a_notebook" title="This is a notebook"}
+
 :::
 
 ::: nb-only
@@ -64,7 +68,11 @@ a <- 10
 
 More text.
 
-::: {.callout-note .nb-end}
+::: {.nb-end}
+
+:::
+
+::: {.callout-note}
 ## End of notebook: This is a notebook
 
 `a_notebook` starts at @nte-a_notebook.

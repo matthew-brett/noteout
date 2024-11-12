@@ -20,11 +20,11 @@ Filtering is in three stages (see below for why):
 This first pass does these steps:
 
 * Flatten notebook divs.
+* Drop in nb-start and nb-end markers before and after flattened div.
 * Drop in Quarto notes before and after flatted div.
 * As well as the top-note, there should be a nb-only div with a link back to
   the web version of the notebook.  This could be a link to the note label for
-  HTML output, but maybe we can omit this for the LaTeX case (because we won't
-  generally be generating the notebooks from the LaTeX build).
+  HTML output.
 
 For example, given::
 
@@ -44,8 +44,12 @@ The output should be::
 
     Some text.
 
-    ::: {#nte-a_notebook .callout-note, name="a_notebook", title="A notebook"}
+    ::: {#nte-a_notebook .callout-note,
     ## Notebook: A notebook
+    :::
+
+    ::: {.nb-start name="a_notebook" title="A notebook"}
+
     :::
 
     ::: nb-only
@@ -60,14 +64,18 @@ The output should be::
 
     More text.
 
-    ::: {.callout-note .end-nb}
+    ::: {.nb-end}
+
+    :::
+
+    ::: {.callout-note}
     ## End of notebook: A notebook
 
     `a_notebook` starts at @nte-a_notebook.
     :::
 
 We have to do a first pass like this, before the Quarto filters, so Quarto can
-expand Quarto-specific stuff such cross-references inside the notebook text.
+expand Quarto-specific stuff such as cross-references inside the notebook text.
 """
 
 import panflute as pf
@@ -95,8 +103,12 @@ def proc_nb_div(elem, doc):
         'title': elem.attributes.get('title', name2title(name))
     }
     header = '''\
-::: {{#nte-{name} .callout-note .nb-start name="{name}" title="{title}"}}
+::: {{#nte-{name} .callout-note}}
 ## Notebook: {title}
+:::
+
+::: {{.nb-start name="{name}" title="{title}"}}
+
 :::
 
 ::: nb-only
@@ -104,7 +116,11 @@ Find this notebook on the web at @nte-{name}.
 :::
 '''.format(**params)
     footer = '''\
-::: {{.callout-note .nb-end}}
+::: {{.nb-end}}
+
+:::
+
+::: {{.callout-note}}
 ## End of notebook: {title}
 
 `{name}` starts at @nte-{name}.
