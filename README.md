@@ -6,6 +6,12 @@ replacing with suitable link material.
 See the example [Quarto](https://quarto.org) book project in
 `src/noteout/tests/qbook` for a quickstart.
 
+If you are using these filters with Quarto, as we are, you will need Quarto >=
+1.4, because it has mechanisms to run filters at different stages of the
+filtering process.  See [this change
+note](https://quarto.org/docs/prerelease/1.4/lua_changes.html#more-precise-targeting-of-ast-processing-phases)
+for more information.
+
 Install with:
 
 ```
@@ -57,7 +63,7 @@ ln -s wrap_notebooks.py add_notebook_links.py
 
 This linking sets up the filters by making them single executable files in your Quarto tree — a requirement for Quarto filters.   You could also have copied the relevant files from the Noteout source.
 
-Use these filters with something like the following in your `_quarto.yml` file:
+Use these filters with something like the following in your `_quarto.yml` file.  Remember, Noteout depends on features in Quarto 1.4, so expect this configuration to fail in earlier versions.
 
 ```yaml
 filters:

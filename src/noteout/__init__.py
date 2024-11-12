@@ -1,7 +1,7 @@
 """ Notebook parsing filters for Pandoc
 """
 
-__version__ = '0.1.0a7'
+__version__ = '1.0.0a1'
 
 # Patch Panflute for Quarto RawBlocks:
 # https://github.com/sergiocorreia/panflute/pull/251
