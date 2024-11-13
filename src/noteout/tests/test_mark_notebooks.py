@@ -6,6 +6,9 @@
   URL equivalents, depending on output format.
 * For the LaTeX / PDF output, the links should be absolute web links.  For
   HTML, the links should be relative to the output page.
+* For notebooks with data files, the Download link should be to a zip archive.
+* Drop nb-start and nb-end markers around the notebook, to allow
+  `export_notebooks` to find and extract the notebooks.
 * As well as the top-note, there should be a nb-only div with a link back to
   the web version of the notebook.  This could be a link to the note label for
   HTML output, but maybe we can omit this for the LaTeX case (because we won't
@@ -14,40 +17,30 @@
 
 from copy import deepcopy
 
-from noteout import filter_pre, filter_divspans, mark_notebooks as mnb
-
+from noteout import mark_notebooks as mnb
 from noteout.nutils import fmt2fmt, filter_doc, FilterError
 
 from .tutils import check_contains, filter_doc_nometa, fmt2md
 
 import pytest
 
-
-@pytest.fixture
-def filtered_nb1(nb1_doc):
-    metadata = {'noteout': {
-        'pre-filter': ['todo', 'comment'],
-        'filter-divspans': ['python']}}
-    nb1_doc.metadata = metadata
-    de_pre = filter_doc_nometa(nb1_doc, filter_pre.PreFilter)
-    de_pre.metadata = metadata
-    return filter_doc(de_pre, filter_divspans.DivSpanFilter)
-
-
-INP_RMD = """\
-Some text.
-
-::: {.notebook name="a_notebook" title="This is a notebook"}
+SIMPLE_NB = """\
 Here, again, is a paragraph.
 
 ```{r}
 a <- 10
 ```
 
-More text.
+More text."""
+
+INP_RMD = r"""\
+Some text.
+
+::: {{.notebook name="a_notebook" title="This is a notebook"}}
+{nb_text}
 :::"""
 
-OUT_RMD = """\
+OUT_RMD = r"""\
 Some text.
 
 ::: {{#nte-a_notebook .callout-note}}
@@ -64,13 +57,7 @@ Some text.
 Find this notebook on the web at @nte-a_notebook.
 :::
 
-Here, again, is a paragraph.
-
-```{{r}}
-a <- 10
-```
-
-More text.
+{nb_text}
 
 ::: {{.nb-end}}
 
@@ -82,20 +69,23 @@ More text.
 `a_notebook` starts at @nte-a_notebook.
 :::"""
 
-LATEX_RMD = OUT_RMD.format(link_text="""\
+DEF_LINK_TEXT = """\
 * [Download notebook](https://resampling-stats.github.io/latest-r/notebooks/a_notebook.Rmd)
 * [Interact](https://resampling-stats.github.io/latest-r/interact/lab/index.html?path=a_notebook.Rmd)"""
-                          )
+
+LATEX_RMD = OUT_RMD.format(link_text=DEF_LINK_TEXT, nb_text=SIMPLE_NB)
 
 HTML_RMD = OUT_RMD.format(link_text="""\
 <div class="nb-links">
 <a class="notebook-link" href="notebooks/a_notebook.Rmd">Download notebook</a>
 <a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>
-</div>""")
+</div>""",
+                          nb_text=SIMPLE_NB)
 
 
 def test_examples():
-    in_doc = fmt2fmt(INP_RMD, out_fmt='panflute')
+    DEF_RMD = INP_RMD.format(nb_text=SIMPLE_NB)
+    in_doc = fmt2fmt(DEF_RMD, out_fmt='panflute')
     is_nb_div = lambda e, d: mnb.is_nb_div(e)
     assert check_contains(in_doc, is_nb_div)
     # We need to add the relevant metadata.
@@ -119,7 +109,7 @@ def test_examples():
     out_doc = filter_doc_nometa(html_in_doc, mnb)
     assert fmt2md(out_doc) == fmt2md(HTML_RMD)
     # Remove specific title, get default.
-    no_title_rmd = INP_RMD.replace(' title="This is a notebook"', '')
+    no_title_rmd = DEF_RMD.replace(' title="This is a notebook"', '')
     out_no_title_rmd = LATEX_RMD.replace('This is a notebook', 'A notebook')
     nt_in_doc = fmt2fmt(no_title_rmd, out_fmt='panflute')
     nt_in_doc.metadata = in_doc.metadata

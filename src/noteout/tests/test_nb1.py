@@ -10,7 +10,7 @@ import jupytext
 from noteout.filter_divspans import DivSpanFilter as nfds
 
 from .tutils import (read_md, assert_json_equal, filter_doc_nometa,
-                     filter_three_pass, fmt2md)
+                     filter_two_pass, fmt2md)
 
 import pytest
 
@@ -56,7 +56,7 @@ def test_nb1_notebook(nb1_doc, in_tmp_path):
             meta['noteout']['interact-url'] = (
                 'https://mybinder.org/v2/gh/resampling-stats/'
                 'resampling-with/gh-pages?filepath=python-book/')
-        nb_filtered = filter_three_pass(nb1_doc)
+        nb_filtered = filter_two_pass(nb1_doc)
         actual = fmt2md(nb_filtered)
         expected = read_md(DATA_DIR.joinpath(f'nb1_{lang}_nbs.Rmd'),
                            'markdown')
@@ -88,7 +88,7 @@ def test_notebooks(in_tmp_path, nb1_doc):
     for lang, nb_format in (('python', 'ipynb'),
                             ('r', 'Rmd')):
         nb1_doc.metadata['noteout'] = {'nb-format': nb_format}
-        filter_three_pass(nb1_doc)
+        filter_two_pass(nb1_doc)
         for nb_name in NB_NAMES:
             nb = jupytext.read(f'{nb_name}.{nb_format}')
             assert len(nb.cells) == 2
@@ -104,7 +104,7 @@ def nb1_idoc(nb1_doc):
 
 def test_nb1_out_path(in_tmp_path, nb1_idoc):
     # No output directory, built at working directory.
-    filter_three_pass(nb1_idoc)
+    filter_two_pass(nb1_idoc)
     for nb_name in INB_NAMES:
         assert op.exists(nb_name)
         assert (in_tmp_path / nb_name).exists()
@@ -113,7 +113,7 @@ def test_nb1_out_path(in_tmp_path, nb1_idoc):
 def test_nb1_proj_path(in_tmp_path, nb1_idoc):
     # Set project output path (relative), use that.
     nb1_idoc.metadata['quarto-doc-params'] = {'output_directory': 'test_book'}
-    filter_three_pass(nb1_idoc)
+    filter_two_pass(nb1_idoc)
     for nb_name in INB_NAMES:
         assert op.exists(op.join('test_book', nb_name))
         assert (in_tmp_path / 'test_book' / nb_name).exists()
@@ -122,7 +122,7 @@ def test_nb1_proj_path(in_tmp_path, nb1_idoc):
 def test_nb1_sdir(in_tmp_path, nb1_idoc):
     # Set notebook subdirectory, use that.
     nb1_idoc.metadata['noteout']['nb-dir'] = 'nb_directory'
-    filter_three_pass(nb1_idoc)
+    filter_two_pass(nb1_idoc)
     for nb_name in INB_NAMES:
         assert op.exists(op.join('nb_directory', nb_name))
         assert (in_tmp_path / 'nb_directory' / nb_name).exists()
@@ -132,7 +132,7 @@ def test_nb1_proj_and_sdir(in_tmp_path, nb1_idoc):
     # Set both project and subdirectory.
     nb1_idoc.metadata['quarto-doc-params'] = {'output_directory': 'test_book'}
     nb1_idoc.metadata['noteout']['nb-dir'] = 'nb_directory'
-    filter_three_pass(nb1_idoc)
+    filter_two_pass(nb1_idoc)
     for nb_name in INB_NAMES:
         assert op.exists(op.join('test_book', 'nb_directory', nb_name))
         assert (in_tmp_path / 'test_book' / 'nb_directory' / nb_name).exists()
@@ -144,7 +144,7 @@ def test_nb1_sdir_overrides(in_tmp_path, tmp_path, nb1_idoc):
     # Subdirectory is absolute path.
     # Subdirectory overrides project directory.
     nb1_idoc.metadata['noteout']['nb-dir'] = op.abspath(tmp_path)
-    filter_three_pass(nb1_idoc)
+    filter_two_pass(nb1_idoc)
     for nb_name in INB_NAMES:
         assert not op.exists(op.join('test_book', nb_name))
         assert (tmp_path / nb_name).exists()

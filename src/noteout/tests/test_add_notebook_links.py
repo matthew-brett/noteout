@@ -9,7 +9,6 @@
 
 from pathlib import Path
 
-import jupytext as jpt
 import noteout.add_notebook_links as anbL
 
 from noteout.nutils import fmt2fmt, FilterError, filter_doc
@@ -165,44 +164,3 @@ df2 <- read.csv("data/df2.csv")
     assert (out_nb_path / 'data' / 'df2.csv').is_file()
     data_rmd = data_rmd.replace('+ data file', '+ data files')
     assert fmt2md(out_with_data2) == fmt2md(data_rmd)
-
-
-def test_find_data_files(tmp_path):
-    nb = jpt.reads(
-        '''\
-```{r}
-df <- read.csv("data/df.csv")
-```''', 'Rmd')
-    assert anbL.find_data_files(nb) == ['data/df.csv']
-    # Can find multiple file reads in one cell.
-    nb = jpt.reads(
-        '''\
-```{r}
-df <- read.csv("data/df.csv")
-df2 <- read.csv("data/df2.csv")
-```''', 'Rmd')
-    assert anbL.find_data_files(nb) == ['data/df.csv', 'data/df2.csv']
-    # Can find matches in different cells.
-    nb = jpt.reads(
-        '''\
-```{r}
-df <- read.csv("data/df.csv")
-df2 <- read.csv("data/df2.csv")
-```
-
-Some text
-
-```{r}
-df2 <- read.csv("some_file.csv")
-```''', 'Rmd')
-    assert (anbL.find_data_files(nb) ==
-            ['data/df.csv', 'data/df2.csv', 'some_file.csv'])
-    # Matches are sorted and unique.
-    nb = jpt.reads(
-        '''\
-```{r}
-df2 <- read.csv("data/df2.csv")
-df <- read.csv("data/df.csv")
-df1 <- read.csv("data/df.csv")
-```''', 'Rmd')
-    assert anbL.find_data_files(nb) == ['data/df.csv', 'data/df2.csv']

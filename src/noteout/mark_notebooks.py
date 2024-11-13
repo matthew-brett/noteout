@@ -1,27 +1,29 @@
 #!/usr/bin/env python3
 """ Panflute filter to mark up text for notebooks.
 
-Filtering is in three stages (see below for why):
+Filtering is in two stages (see below for why):
 
 * Replace notebook Pandoc divs with notebook start and end markers.  (Why?
-  Because the divs prevent Quarto from doing it's normal contents table.  And
+  Because the divs prevent Quarto from doing its normal contents table.  And
   because we want to drop #nte-my_notebook section markers which we can use to
-  reference the notebook).
+  reference the notebook). We drop download and interaction links into these
+  section markers.  Also - because we want to use callout-notes for the
+  notebook head and tail markers, and these need to be processed before Quarto
+  gets to them, at the (in Quarto's terms) ``pre-ast`` phase of filtering.
 * (At some point, run the Quarto filters, then):
 * Parse the start and end markers to find the notebooks, then write out the
-  notebook files after suitable processing.
-* In a last step, work out which notebooks have data files associated, write
-  out zips for download of notebooks with data files, and drop interact and
-  download links into the originating document.   (We have to do this last step
-  separately because we don't know what the download links should link to until
-  we know whether the notebooks have data files, and should therefore be
-  ``.zip`` download links instead of notebook download links).
+  notebook files after suitable processing. In this phase, we work out which
+  notebooks have data files associated, and write out zips for download of
+  notebooks with data files.
 
 This first pass does these steps:
 
 * Flatten notebook divs.
-* Drop in nb-start and nb-end markers before and after flattened div.
-* Drop in Quarto notes before and after flatted div.
+* Drop in Quarto notes before and after flattened div, and add download links.
+* Drop in nb-start and nb-end markers before and after flattened div.  We need
+  separated start and end markers because Quarto won't let us add classes or
+  attributes to the Quarto notes (above).  See:
+  `https://github.com/quarto-dev/quarto-cli/issues/11362`_.
 * As well as the top-note, there should be a nb-only div with a link back to
   the web version of the notebook.  This could be a link to the note label for
   HTML output.
@@ -40,12 +42,14 @@ For example, given::
     More text.
     :::
 
-The output should be::
+The output should be (in this case for default / LaTeX build)::
 
     Some text.
 
     ::: {#nte-a_notebook .callout-note,
     ## Notebook: A notebook
+    * [Download notebook](https://resampling-stats.github.io/latest-r/notebooks/a_notebook.Rmd)
+    * [Interact](https://resampling-stats.github.io/latest-r/interact/lab/index.html?path=a_notebook.Rmd)
     :::
 
     ::: {.nb-start name="a_notebook" title="A notebook"}
