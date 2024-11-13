@@ -22,11 +22,15 @@ import pytest
 LATEX_RMD = """\
 Some text.
 
-::: {#nte-a_notebook .callout-note .nb-start name="a_notebook" title="This is a notebook"}
+::: {#nte-a_notebook .callout-note}
 ## Notebook: This is a notebook
 
 * [Download notebook](https://resampling-stats.github.io/latest-r/notebooks/a_notebook.Rmd)
 * [Interact](https://resampling-stats.github.io/latest-r/interact/lab/index.html?path=a_notebook.Rmd)
+:::
+
+::: {.nb-start name="a_notebook" title="This is a notebook"}
+
 :::
 
 ::: nb-only
@@ -41,7 +45,11 @@ a <- 10
 
 More text.
 
-::: {.callout-note .nb-end}
+::: {.nb-end}
+
+:::
+
+::: {.callout-note}
 ## End of notebook: This is a notebook
 
 `a_notebook` starts at @nte-a_notebook.
@@ -50,13 +58,17 @@ More text.
 HTML_RMD = """\
 Some text.
 
-::: {#nte-a_notebook .callout-note .nb-start name="a_notebook" title="This is a notebook"}
+::: {#nte-a_notebook .callout-note}
 ## Notebook: This is a notebook
 
 <div class="nb-links">
 <a class="notebook-link" href="notebooks/a_notebook.Rmd">Download notebook</a>
 <a class="interact-button" href="/interact/lab/index.html?path=a_notebook.Rmd">Interact</a>
 </div>
+:::
+
+::: {.nb-start name="a_notebook" title="This is a notebook"}
+
 :::
 
 ::: nb-only
@@ -71,7 +83,11 @@ a <- 10
 
 More text.
 
-::: {.callout-note .nb-end}
+::: {.nb-end}
+
+:::
+
+::: {.callout-note}
 ## End of notebook: This is a notebook
 
 `a_notebook` starts at @nte-a_notebook.

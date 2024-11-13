@@ -22,22 +22,22 @@ tree, and any divs contained therein.
 
 from pathlib import Path
 import re
+import zipfile
 
 import jupytext as jpt
 import panflute as pf
 from panflute import Str, Strong, Space
 
-from noteout.nutils import is_div_class, FilterError, name2title, fmt2fmt
+from noteout.nutils import (is_div_class, FilterError, name2title, fmt2fmt,
+                            fill_params, find_data_files)
 
-_REQUIRED_NOTEOUT_KEYS = ('nb-dir', 'nb-format')
+_REQUIRED_NOTEOUT_KEYS = ()
 
 FENCE_START_RE = re.compile(r'^```\s*(\w+)$', re.MULTILINE)
 
 # Stuff inside HTML (and Markdown) comment markers.
 COMMENT_RE = re.compile(r'<!--.*?-->', re.MULTILINE | re.DOTALL)
 
-# Default flatten divspans
-DEFAULT_FLATTEN_DS = {'header-section-number', 'nb-only'}
 
 def proc_text(nb_text):
     """ Process notebook GFM markdown
@@ -47,23 +47,6 @@ def proc_text(nb_text):
     # Modify code fencing to add curlies around fence arguments.
     # This converts from GFM Markdown fence blocks to RMarkdown fence blocks.
     return FENCE_START_RE.sub(r'```{\1}', txt)
-
-
-def get_params(doc):
-    params = doc.get_metadata('noteout', {})
-    for key in _REQUIRED_NOTEOUT_KEYS:
-        if not key in params:
-            raise FilterError(f'noteout.{key} must be defined in metadata')
-    qdp = doc.get_metadata('quarto-doc-params', {})
-    params['out_path'] = Path(qdp.get('output_directory', '.'))
-    params['nb_out_path'] = params['out_path'] / params['nb-dir']
-    params['strip-header-nos'] = params.get('strip-header-nos', True)
-    flat_ds = set(params.get('nb-flatten-divspans', DEFAULT_FLATTEN_DS))
-    if '+' in flat_ds:
-        flat_ds.remove('+')
-        flat_ds = flat_ds | DEFAULT_FLATTEN_DS
-    params['nb-flatten-divspans'] = flat_ds
-    return params
 
 
 def filter_callout_header(elem):
@@ -139,25 +122,66 @@ def find_notebooks(elem):
     return nbs
 
 
-def write_notebook(nb_doc, attrs):
+def write_notebook_files(nb_doc, attrs):
     if 'name' not in attrs:
         raise FilterError('Need name in notebook attributes')
     if 'title' not in attrs:
         attrs['title'] = name2title(attrs['name'])
-    out_nb_fname = attrs['nb_out_path'] / '{name}.{nb-format}'.format(**attrs)
-    out_nb_fname.parent.mkdir(parents=True, exist_ok=True)
+    out_nb_dir = attrs['nb_out_path']
+    out_nb_fpath = out_nb_dir / '{name}.{nb-format}'.format(**attrs)
+    out_nb_dir.mkdir(parents=True, exist_ok=True)
     nb_md = ('# {title}\n\n\n'.format(**attrs) +
              fmt2fmt(nb_doc, in_fmt='panflute'))
     nb = jpt.reads(proc_text(nb_md), 'Rmd')
-    jpt.write(nb, out_nb_fname, fmt=attrs['nb-format'])
+    jpt.write(nb, out_nb_fpath, fmt=attrs['nb-format'])
+    # Write associated data files.
+    if not (dfs := find_data_files(nb)):
+        return
+    out_data_files = write_data_files(Path(), dfs, out_nb_dir)
+    # Write zip file if there are data files
+    write_zip([out_nb_fpath] + out_data_files, out_nb_dir), len(dfs)
+
+
+def write_data_files(in_path, data_files, out_path):
+    """ Write data files `data_files` to path `out_path`
+
+    Parameters
+    ----------
+    in_path : :class:`Path`
+        Directory containing input `data_files`.
+    data_files : sequence of str
+        Filenames giving paths to data files.
+    out_path : :class:`Path`
+        Output path.
+
+    Returns
+    -------
+    out_paths : list
+        List of Paths of written files.
+    """
+    out_paths = []
+    for data_fname in data_files:
+        data_out_path = out_path / data_fname
+        data_out_path.parent.mkdir(parents=True, exist_ok=True)
+        data_out_path.write_text((in_path / data_fname).read_text())
+        out_paths.append(data_out_path)
+    return out_paths
+
+
+def write_zip(paths, out_path):
+    out_zip_path = paths[0].with_suffix('.zip')
+    with zipfile.ZipFile(out_zip_path, "w") as zf:
+        for path in paths:
+            zf.write(path, str(path.relative_to(out_path)))
+    return out_zip_path
 
 
 def finalize(doc):
-    params = get_params(doc)
+    params = fill_params(doc.metadata)
     for attrs, nb_doc in find_notebooks(doc):
         nb_doc._wnb_params = params  # for strip_cells
-        nb_out = nb_doc.walk(strip_cells)
-        write_notebook(nb_out, {**attrs, **params})
+        nb_doc = nb_doc.walk(strip_cells)
+        write_notebook_files(nb_doc, {**attrs, **params})
 
 
 def action(elem, doc):

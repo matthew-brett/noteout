@@ -2,12 +2,31 @@
 """
 
 from copy import deepcopy
+from pathlib import Path
+import re
 
 import panflute as pf
 
 
+# Regular expression to identify code reading data.
+READ_RE = re.compile(
+    r'''^\s*
+    \w+\s*(=|<-)\s*
+    (pd\.)*read[._]\w+\(
+    ['"]
+    (?P<fname>.*?)
+    ['"]
+    \)
+    ''',
+    flags=re.MULTILINE | re.VERBOSE)
+
+
 class FilterError(ValueError):
     """ Exception for invalid values in filters
+    """
+
+class NO_DEFAULT:
+    """ Indicates there should be no default value
     """
 
 
@@ -122,3 +141,83 @@ def is_div_class(elem, class_names):
 
 def name2title(name):
     return name.replace('_', ' ').capitalize()
+
+
+def find_data_files(nb):
+    """ Detect data files read within notebook
+
+    Parameters
+    ----------
+    nb : dict
+        Notebook.
+
+    Returns
+    -------
+    out_files : list
+        List of detected filenames.  These will be relative to the path assumed
+        by the `nb`.
+    """
+    out_fnames = []
+    for cell in nb['cells']:
+        if cell['cell_type'] != 'code':
+            continue
+        for m in READ_RE.finditer(cell['source']):
+            out_fnames.append(m.groups()[-1])
+    return sorted(set(out_fnames))
+
+
+_META_DEFAULTS = {
+    'noteout.book-url-root': NO_DEFAULT,
+    'noteout.interact-url': NO_DEFAULT,
+    'noteout.nb-dir': 'notebooks',
+    'noteout.nb-format': 'ipynb',
+    'quarto-doc-params.out_format': None,
+    'quarto-doc-params.output_directory': '.',
+    'noteout.strip-header-nos': True,
+    'noteout.nb-flatten-divspans': ['+'],
+}
+
+# Meaning of '+' in flatten divspans
+_FLATTEN_DS_PLUS = ('header-section-number', 'nb-only')
+
+
+def fill_params(meta, required_keys=(), key_defaults=_META_DEFAULTS):
+    """ Return dictionary with useful default parameters from `meta`
+
+    Parameters
+    ----------
+    meta : :class:`panflute.MetaMap
+        Dictionary-like container for document metadata.
+    required_keys : sequence, optional
+        Key names from `key_defaults` that a) do not have defaults, and b) must
+        be present.
+    key_defaults : dict, optional
+        key, value pairs give key name (can use dotted syntax) and default
+        value, where :class:`NO_DEFAULT` means value of key is required, no
+        default.
+
+    Returns
+    ------
+    params : dict
+        Dictionary with useful keys and values derived from metadata and
+        defaults.
+    """
+    p = {}
+    # Wrap metadata in doc in order to use get_metadata method.
+    doc = pf.Doc(metadata=meta)
+    mget = lambda k, d : doc.get_metadata(k, d)
+    for key, default in key_defaults.items():
+        v = mget(key, default)
+        if v is NO_DEFAULT and key in required_keys:
+            raise FilterError(f'{key} must be defined in metadata')
+        p[key.split('.')[-1]] = v
+    p['output_directory'] = Path(p['output_directory'])
+    # Some calculated defaults.
+    p['url-nb-suffix'] = mget('noteout.url-nb-suffix', '.' + p['nb-format'])
+    p['nb_out_path'] = p['output_directory'] / p['nb-dir']
+    flat_ds = list(p['nb-flatten-divspans'])
+    if '+' in flat_ds:
+        flat_ds.remove('+')
+        flat_ds += list(_FLATTEN_DS_PLUS)
+    p['nb-flatten-divspans'] = set(flat_ds)
+    return p

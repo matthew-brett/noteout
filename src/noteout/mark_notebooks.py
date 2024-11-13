@@ -78,33 +78,47 @@ We have to do a first pass like this, before the Quarto filters, so Quarto can
 expand Quarto-specific stuff such as cross-references inside the notebook text.
 """
 
+import os.path as op
+
+import jupytext as jpt
 import panflute as pf
 
-from noteout.nutils import fmt2fmt, FilterError, is_div_class, name2title
+from noteout.nutils import (fmt2fmt, FilterError, is_div_class, name2title,
+                            find_data_files, fill_params)
+
+
+_REQUIRED_NOTEOUT_KEYS = ('noteout.book-url-root',
+                          'noteout.interact-url')
+
 
 def prepare(doc):
-    pass
+    p = fill_params(doc.metadata, required_keys=_REQUIRED_NOTEOUT_KEYS)
+    p['interact-url'] = '/' + p['interact-url'].lstrip('/')
+    doc._params = p
 
 
 def finalize(doc):
-    pass
+    del doc._params
 
 
 def is_nb_div(elem):
     return is_div_class(elem, 'notebook')
 
 
-def proc_nb_div(elem, doc):
+def proc_nb_div(elem, doc, n_data_files):
     name = elem.attributes.get('name')
     if name is None:
         raise FilterError('Need name attribute for notebook')
-    params = {
-        'name': name,
-        'title': elem.attributes.get('title', name2title(name))
+    params = {**doc._params,
+              'name': name,
+              'title': elem.attributes.get('title', name2title(name)),
+              'link_text': get_nb_links(elem, doc, n_data_files)
     }
     header = '''\
 ::: {{#nte-{name} .callout-note}}
 ## Notebook: {title}
+
+{link_text}
 :::
 
 ::: {{.nb-start name="{name}" title="{title}"}}
@@ -129,15 +143,46 @@ Find this notebook on the web at @nte-{name}.
             fmt2fmt(footer, out_fmt='panflute').content)
 
 
+def get_nb_links(elem, doc, n_dfs):
+    params = doc._params.copy()
+    params.update(elem.attributes)
+    params['dl_rel_url'] = get_dl_rel_url(params, n_dfs)
+    params['dl_text'] = ('notebook' if n_dfs == 0 else
+                         ('zip with notebook + data file' +
+                          ('s' if n_dfs > 1 else '')))
+    params['inter_url'] = ('{interact-url}{name}{url-nb-suffix}'
+                           .format(**params))
+    if doc.get_metadata('quarto-doc-params.out_format') == 'html':
+        txt = '''\
+<div class="nb-links">
+<a class="notebook-link" href="{dl_rel_url}">Download {dl_text}</a>
+<a class="interact-button" href="{inter_url}">Interact</a>
+</div>'''.format(**params)
+    else:  # Generic format.
+        txt = '''\
+* [Download {dl_text}]({book-url-root}/{dl_rel_url})
+* [Interact]({book-url-root}{inter_url})
+'''.format(**params)
+    return txt
+
+
+def get_dl_rel_url(params, n_dfs):
+    params['ext'] = 'zip' if n_dfs else params['nb-format']
+    return '{nb-dir}/{name}.{ext}'.format(**params).replace(op.sep, '/')
+
+
 def action(elem, doc):
     if not is_nb_div(elem):
         return
-    # Flatten out div.  This avoids loss of Quarto
-    # sections inside divs.
+    # Flatten out div.  This avoids loss of Quarto sections inside divs.
     elem_out = list(elem.content)
+    # Detect data files (for download links).
+    nb_text = pf.convert_text(elem_out,
+                              input_format='panflute',
+                              output_format='markdown')
+    dfs = find_data_files(jpt.reads(nb_text, 'Rmd'))
     # Add notes at beginning and end.
-    # header, footer = get_header_footer(name, doc, nb_path, out_path, df_paths)
-    header, footer = proc_nb_div(elem, doc)
+    header, footer = proc_nb_div(elem, doc, len(dfs))
     return list(header) + elem_out + list(footer)
 
 

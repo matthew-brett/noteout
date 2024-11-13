@@ -5,7 +5,6 @@ import os.path as op
 from pathlib import Path
 from copy import deepcopy
 
-import panflute as pf
 import jupytext
 
 from noteout.filter_divspans import DivSpanFilter as nfds

@@ -2,12 +2,16 @@
 
 Some text. More than one line.
 
-::: {#nte-first_notebook .callout-note .nb-start name="first_notebook" title="First notebook"}
+::: {#nte-first_notebook .callout-note
 ## Notebook: First notebook
 
 -   [Download
     notebook](https://example.com/notebooks/first_notebook.ipynb)
 -   [Interact](https://example.com/https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/first_notebook.ipynb)
+:::
+
+::: {.nb-start name="first_notebook" title="First notebook"}
+
 :::
 
 ::: nb-only
@@ -18,7 +22,11 @@ Here is a paragraph.
 
 And another.
 
-::: {.callout-note .nb-end}
+::: {.nb-end}
+
+:::
+
+::: {.callout-note}
 ## End of notebook: First notebook
 
 `first_notebook` starts at @nte-first_notebook.
