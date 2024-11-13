@@ -82,10 +82,21 @@ HTML_RMD = OUT_RMD.format(link_text="""\
 </div>""",
                           nb_text=SIMPLE_NB)
 
+DATA_NB = '''\
+```{r}
+df <- read.csv("data/df.csv")
+```'''
+
+DATAS_NB = '''
+```{r}
+df <- read.csv("data/df.csv")
+df2 <- read.csv("data/df2.csv")
+```'''
+
 
 def test_examples():
-    DEF_RMD = INP_RMD.format(nb_text=SIMPLE_NB)
-    in_doc = fmt2fmt(DEF_RMD, out_fmt='panflute')
+    def_rmd = INP_RMD.format(nb_text=SIMPLE_NB)
+    in_doc = fmt2fmt(def_rmd, out_fmt='panflute')
     is_nb_div = lambda e, d: mnb.is_nb_div(e)
     assert check_contains(in_doc, is_nb_div)
     # We need to add the relevant metadata.
@@ -109,9 +120,23 @@ def test_examples():
     out_doc = filter_doc_nometa(html_in_doc, mnb)
     assert fmt2md(out_doc) == fmt2md(HTML_RMD)
     # Remove specific title, get default.
-    no_title_rmd = DEF_RMD.replace(' title="This is a notebook"', '')
+    no_title_rmd = def_rmd.replace(' title="This is a notebook"', '')
     out_no_title_rmd = LATEX_RMD.replace('This is a notebook', 'A notebook')
     nt_in_doc = fmt2fmt(no_title_rmd, out_fmt='panflute')
     nt_in_doc.metadata = in_doc.metadata
     nt_out_doc = filter_doc_nometa(nt_in_doc, mnb)
     assert fmt2md(nt_out_doc) == fmt2md(out_no_title_rmd)
+    # Add data files.
+    data_in_rmd = INP_RMD.format(nb_text=DATA_NB)
+    data_out_rmd = OUT_RMD.format(link_text=DEF_LINK_TEXT, nb_text=DATA_NB)
+    data_out_rmd = (
+        data_out_rmd.replace(
+            'Download notebook',
+            'Download zip with notebook + data file')
+        .replace(
+            'notebooks/a_notebook.Rmd',
+            'notebooks/a_notebook.zip'))
+    data_in_doc = fmt2fmt(data_in_rmd, out_fmt='panflute')
+    data_in_doc.metadata = in_doc.metadata
+    data_out_doc = filter_doc_nometa(data_in_doc, mnb)
+    assert fmt2md(data_out_doc) == fmt2md(data_out_rmd)

@@ -12,7 +12,7 @@ import noteout.export_notebooks as enb
 
 from noteout.nutils import fmt2fmt, filter_doc
 
-from .tutils import fmt2md
+from .tutils import fmt2md, filter_doc_nometa
 from . import test_mark_notebooks as tmnb
 
 
@@ -23,8 +23,13 @@ Find this notebook on the web at @nte-{name}.
 
 '''
 
+
+def _with_nb(nb_text, link_text=tmnb.DEF_LINK_TEXT):
+    return tmnb.OUT_RMD.format(link_text=link_text, nb_text=nb_text)
+
+
 def test_basic(in_tmp_path):
-    marked_rmd = tmnb.LATEX_RMD
+    marked_rmd = _with_nb(tmnb.SIMPLE_NB)
     in_doc = fmt2fmt(marked_rmd, out_fmt='panflute')
     in_doc.metadata['noteout'] = {'nb-format': 'Rmd'}
     out_doc = filter_doc(in_doc, enb)
@@ -41,8 +46,7 @@ def test_basic(in_tmp_path):
 
 
 def test_nb_outputs(in_tmp_path):
-    in_doc = fmt2fmt(marked_rmd, out_fmt='panflute')
-    in_doc.metadata = {'noteout': {
+    metadata = {'noteout': {
         'nb-format': 'Rmd',
         'book-url-root': 'https://resampling-stats.github.io/latest-r',
         'interact-url': "/interact/lab/index.html?path="}}
@@ -54,18 +58,13 @@ def test_nb_outputs(in_tmp_path):
 ```{r}
 df <- read.csv("data/df.csv")
 ```'''
-    out_with_data = filter_doc_nometa(in_doc, anbL)
+    in_doc = fmt2fmt(_with_nb(nb_text), out_fmt='panflute')
+    in_doc.metadata = metadata.copy()
+    out_with_data = filter_doc_nometa(in_doc, enb)
+    out_nb_path = Path('notebooks') / 'a_notebook.Rmd'
     assert (out_nb_path / 'data').is_dir()
     assert (out_nb_path / 'data' / 'df.csv').is_file()
     assert (out_nb_path / 'a_notebook.zip').is_file()
-    data_rmd = (
-        HTML_RMD.replace(
-            'Download notebook',
-            'Download zip with notebook + data file')
-        .replace(
-            'notebooks/a_notebook.Rmd',
-            'notebooks/a_notebook.zip'))
-    assert fmt2md(out_with_data) == fmt2md(data_rmd)
     # Two data files.
     in_data = data_path / 'df2.csv'
     in_data.write_text('a,b\n1,2\n3,4')
