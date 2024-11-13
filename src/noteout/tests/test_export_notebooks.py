@@ -8,6 +8,7 @@ Here we are doing the second step of three.
 
 from pathlib import Path
 import shutil
+from zipfile import ZipFile
 
 import noteout.export_notebooks as enb
 
@@ -56,10 +57,13 @@ def test_nb_outputs(in_tmp_path):
     in_doc.metadata = metadata.copy()
     filter_doc_nometa(in_doc, enb)
     nb_dir = Path('notebooks')
-    assert (nb_dir / 'a_notebook.Rmd').is_file()
+    out_nb_path = nb_dir / 'a_notebook.Rmd'
+    assert out_nb_path.is_file()
     nb_data_dir = nb_dir / 'data'
     assert (nb_data_dir / 'df.csv').is_file()
-    assert (nb_dir / 'a_notebook.zip').is_file()
+    out_zip_path = out_nb_path.with_suffix('.zip')
+    with ZipFile(out_zip_path, 'r') as zf:
+        assert zf.namelist() == ['a_notebook.Rmd', 'data/df.csv']
     # Two data files.
     shutil.rmtree(nb_dir)
     in_data = data_path / 'df2.csv'
