@@ -14,21 +14,27 @@ book:
 filters:
   - at: pre-ast
     type: json
-    path: filters/filter_pre.py
+    path: filter_pre.py
   - at: pre-ast
     type: json
-    path: filters/filter_divspans.py
+    path: filter_divspans.py
   - at: pre-ast
-    path: filters/add-meta.lua
+    path: add-meta.lua
   - at: pre-ast
     type: json
-    path: filters/mark_notebooks.py
+    path: mark_notebooks.py
   - at: post-quarto
     type: json
-    path: filters/export_notebooks.py
+    path: write_meta.py
   - at: post-quarto
     type: json
-    path: filters/filter_nb_only.py
+    path: write_doc.py
+  - at: post-quarto
+    type: json
+    path: export_notebooks.py
+  - at: post-quarto
+    type: json
+    path: filter_nb_only.py
 
 bibliography: references.bib
 
@@ -41,5 +47,6 @@ format:
 noteout:
   filter-divspans: ['r']
   nb-format: ipynb
-  interact-url: https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/
+  interact-url: https://example.com?filepath=python-book/
   book-url-root: https://example.com
+  nb-dir: .

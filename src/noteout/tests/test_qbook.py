@@ -19,6 +19,7 @@ import panflute as pf
 
 QBOOK_PATH = Path(__file__).parent.joinpath('qbook')
 NB_ONLY_STR = 'This appears only in the notebook'
+NB_DIR = '.'
 
 
 def get_yml_config(lang='Python'):
@@ -108,7 +109,7 @@ def make_new_book(tmp_path, lang, extra_config=None, formats=('html',)):
                             extra_config=extra_config,
                             formats=formats)
     if 'html' in formats:  # Only HTML copies notebook.
-        nb, nb_parsed = read_notebook(book_path / '_book' /
+        nb, nb_parsed = read_notebook(book_path / '_book' / NB_DIR /
                                     f'my_notebook.{params["nb_ext"]}')
     else:
         nb = nb_parsed = {}
@@ -155,11 +156,14 @@ def test_qbook_render(tmp_path):
         assert len(nb.cells) == 5
         p1 = parsed[1]
         assert p1['lines'] == [
+            'Find this notebook on the web at '
+            '<a href="#nte-my_notebook" '
+            'class="quarto-xref">Note\xa0nte-my_notebook</a>.',
             'Here is a paragraph.',
             NB_ONLY_STR,
             'A heading']  # Includes check that header number stripped.
         # Check nb-only div stripped.
-        assert p1['types'] == [pf.Para, pf.Para, pf.Header]
+        assert p1['types'] == [pf.Para, pf.Para, pf.Para, pf.Header]
         # Check cell output blocks stripped from text.
         for cell_info in parsed:
             if cell_info['cell_type'] != 'markdown':
@@ -179,57 +183,56 @@ def test_qbook_render(tmp_path):
 
 
 def test_nb_output(tmp_path):
-    extra_config = {'noteout': {'strip-header-nos': False}}
+    extra_config = {'noteout': {'nb-strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
     parsed = params['nb_parsed']
     # If we turn off header stripping, we get section no.
     assert parsed[1]['lines'] == [
+        'Find this notebook on the web at '
+        '<a href="#nte-my_notebook" '
+        'class="quarto-xref">Note\xa0nte-my_notebook</a>.',
         'Here is a paragraph.',
         NB_ONLY_STR,
         '2.1 A heading']
     # Turn off all container filtering.
     extra_config = {'noteout': {'nb-flatten-divspans': [],
-                                'strip-header-nos': False}}
+                                'nb-strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
     parsed = params['nb_parsed']
     # Check nothing is filtered.
-    assert parsed[1]['types'] == [pf.Para, pf.Div, pf.Header]
-    assert parsed[-1]['types'] == [pf.Para, pf.Div, pf.Para]
+    assert parsed[1]['types'] == [pf.Div, pf.Para, pf.Div, pf.Header]
+    assert parsed[-1]['types'] == [pf.Div, pf.Para, pf.Div, pf.Para]
     # Python / R span to start last cell.
     assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Span]
     # Header has span around number.
     assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
             [pf.Span, pf.Space, pf.Str, pf.Space, pf.Str])
     # Turn on maximal container filtering, retain header numbers.
-    extra_config = {'noteout': {'nb-flatten-divspans':
-                                ['+', 'python'],
-                                'strip-header-nos': False}}
+    extra_config = {'noteout': {'nb-flatten-divspans': ['+', 'python'],
+                                'nb-strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
     parsed = params['nb_parsed']
     # Check everything is filtered.
     assert parsed[1]['types'] == [pf.Para, pf.Para, pf.Header]
     assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
     # Now we have the contents of the Python span, not the span.
-    assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Str,
-                                                               pf.Space,
-                                                               pf.Str]
+    assert ([type(v) for v in parsed[-1]['pfp'][0].content] ==
+            [pf.Str, pf.Space, pf.Str])
     # We have the header number, but not the header number span.
     assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
             [pf.Str, pf.Space, pf.Str, pf.Space, pf.Str])
     # If we don't add the '+', we don't get header or nb-only flattening.
-    extra_config = {'noteout': {'nb-flatten-divspans':
-                                ['python'],
-                                'strip-header-nos': False}}
+    extra_config = {'noteout': {'nb-flatten-divspans': ['python'],
+                                'nb-strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
     parsed = params['nb_parsed']
     # The nb only is not flattened
-    assert parsed[1]['types'] == [pf.Para, pf.Div, pf.Header]
+    assert parsed[1]['types'] == [pf.Div, pf.Para, pf.Div, pf.Header]
     # But the Python block is.
-    assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
+    assert parsed[-1]['types'] == [pf.Div, pf.Para, pf.Para, pf.Para]
     # We have the contents of the span, from span flattening.
-    assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Str,
-                                                               pf.Space,
-                                                               pf.Str]
+    assert ([type(v) for v in parsed[-1]['pfp'][0].content] ==
+            [pf.Str, pf.Space, pf.Str])
     # We still have the header span tho'
     assert ([type(v) for v in parsed[1]['pfp'][-1].content] ==
             [pf.Span, pf.Space, pf.Str, pf.Space, pf.Str])
