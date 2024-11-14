@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from .tutils import md2fmt
+from .tutils import q2doc
 
 DATA_DIR = Path(__file__).parent
 
@@ -18,7 +18,7 @@ def nb1_text():
 
 @pytest.fixture
 def nb1_doc(nb1_text):
-    return md2fmt(nb1_text, 'panflute')
+    return q2doc(nb1_text)
 
 
 @pytest.fixture

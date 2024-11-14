@@ -2,7 +2,7 @@
 
 Some text. More than one line.
 
-::: {#nte-first_notebook .callout-note
+::: {#nte-first_notebook .callout-note}
 ## Notebook: First notebook
 
 -   [Download
@@ -55,12 +55,16 @@ Continues.
 
 Then we write: [more R]{.r}.
 
-::: {#nte-second_notebook .callout-note .nb-start name="second_notebook" title="Second notebook"}
+::: {#nte-second_notebook .callout-note}
 ## Notebook: Second notebook
 
 -   [Download
     notebook](https://example.com/notebooks/second_notebook.ipynb)
 -   [Interact](https://example.com/https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/second_notebook.ipynb)
+:::
+
+::: {.nb-start name="second_notebook" title="Second notebook"}
+
 :::
 
 ::: nb-only
@@ -71,7 +75,11 @@ Here, again, is a paragraph.
 
 And, again, another.
 
-::: {.callout-note .nb-end}
+::: {.nb-end}
+
+:::
+
+::: {.callout-note}
 ## End of notebook: Second notebook
 
 `second_notebook` starts at @nte-second_notebook.

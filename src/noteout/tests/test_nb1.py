@@ -70,6 +70,8 @@ NB_EXPECTED = {'first_notebook': """\
 # First notebook
 
 
+Find this notebook on the web at @nte-first_notebook.
+
 Here is a paragraph.
 
 And another.
@@ -78,19 +80,31 @@ And another.
 # Second notebook
 
 
+Find this notebook on the web at @nte-second_notebook.
+
 Here, again, is a paragraph.
 
 And, again, another.
 """}
 
 
+NB1_META = {'noteout': {
+    'nb-format': 'ipynb',
+    'interact-url': 'https://example.com/interact?path=',
+    'book-url-root': 'https://example.com',
+    'nb-dir': 'out_notes',
+}}
+
+
 def test_notebooks(in_tmp_path, nb1_doc):
     for lang, nb_format in (('python', 'ipynb'),
                             ('r', 'Rmd')):
-        nb1_doc.metadata['noteout'] = {'nb-format': nb_format}
+        nb1_doc.metadata = NB1_META.copy()
+        nb1_doc.metadata['noteout']['nb-format'] = nb_format
         filter_two_pass(nb1_doc)
+        out_path = Path('out_notes')
         for nb_name in NB_NAMES:
-            nb = jupytext.read(f'{nb_name}.{nb_format}')
+            nb = jupytext.read(out_path / f'{nb_name}.{nb_format}')
             assert len(nb.cells) == 2
             nb_md = jupytext.writes(nb, fmt='Rmd')
             assert nb_md == NB_EXPECTED[nb_name]
@@ -98,16 +112,17 @@ def test_notebooks(in_tmp_path, nb1_doc):
 
 @pytest.fixture
 def nb1_idoc(nb1_doc):
-    nb1_doc.metadata['noteout'] = {'nb-format': 'ipynb'}
+    nb1_doc.metadata = NB1_META.copy()
+    nb1_doc.metadata['noteout']['nb-format'] = 'ipynb'
     return nb1_doc
 
 
 def test_nb1_out_path(in_tmp_path, nb1_idoc):
     # No output directory, built at working directory.
     filter_two_pass(nb1_idoc)
+    out_path = Path('out_notes')
     for nb_name in INB_NAMES:
-        assert op.exists(nb_name)
-        assert (in_tmp_path / nb_name).exists()
+        assert (out_path / nb_name).is_file()
 
 
 def test_nb1_proj_path(in_tmp_path, nb1_idoc):

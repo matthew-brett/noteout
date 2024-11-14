@@ -2,20 +2,34 @@
 
 Some text. More than one line.
 
-::: {.notebook name="first_notebook"}
-Start of `first_notebook` notebook
+::: {#nte-first_notebook .callout-note}
+## Notebook: First notebook
 
-```{=html}
-<div class="nb-links">
-<a class="notebook-link" href=first_notebook.Rmd>Download notebook</a>
-</div>
-```
+-   [Download
+    notebook](https://example.com/notebooks/first_notebook.Rmd)
+-   [Interact](https://example.com/https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/first_notebook.Rmd)
+:::
+
+::: {.nb-start name="first_notebook" title="First notebook"}
+
+:::
+
+::: nb-only
+Find this notebook on the web at @nte-first_notebook.
+:::
 
 Here is a paragraph.
 
 And another.
 
-End of `first_notebook` notebook
+::: {.nb-end}
+
+:::
+
+::: {.callout-note}
+## End of notebook: First notebook
+
+`first_notebook` starts at @nte-first_notebook.
 :::
 
 More text.
@@ -41,20 +55,34 @@ Continues.
 
 Then we write: [more R]{.r}.
 
-::: {.notebook name="second_notebook"}
-Start of `second_notebook` notebook
+::: {#nte-second_notebook .callout-note}
+## Notebook: Second notebook
 
-```{=html}
-<div class="nb-links">
-<a class="notebook-link" href=second_notebook.Rmd>Download notebook</a>
-</div>
-```
+-   [Download
+    notebook](https://example.com/notebooks/second_notebook.Rmd)
+-   [Interact](https://example.com/https://mybinder.org/v2/gh/resampling-stats/resampling-with/gh-pages?filepath=python-book/second_notebook.Rmd)
+:::
+
+::: {.nb-start name="second_notebook" title="Second notebook"}
+
+:::
+
+::: nb-only
+Find this notebook on the web at @nte-second_notebook.
+:::
 
 Here, again, is a paragraph.
 
 And, again, another.
 
-End of `second_notebook` notebook
+::: {.nb-end}
+
+:::
+
+::: {.callout-note}
+## End of notebook: Second notebook
+
+`second_notebook` starts at @nte-second_notebook.
 :::
 
 End of page.
