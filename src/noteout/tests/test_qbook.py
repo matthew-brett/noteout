@@ -79,6 +79,7 @@ def make_book_lang(out_path, lang, extra_config=None,
 def read_notebook(nb_fname):
     # Check notebook contents
     nb = jupytext.read(nb_fname)
+    # Make panflute parsed version of each cell.
     parsed_cells = [{'cell_type': c['cell_type']} for c in nb.cells]
     for i, cell in enumerate(nb.cells):
         if cell['cell_type'] != 'markdown':
@@ -110,7 +111,7 @@ def make_new_book(tmp_path, lang, extra_config=None, formats=('html',)):
                             formats=formats)
     if 'html' in formats:  # Only HTML copies notebook.
         nb, nb_parsed = read_notebook(book_path / '_book' / NB_DIR /
-                                    f'my_notebook.{params["nb_ext"]}')
+                                      f'my_notebook.{params["nb_ext"]}')
     else:
         nb = nb_parsed = {}
     params.update(dict(book_path=book_path, nb=nb, nb_parsed=nb_parsed))
@@ -154,6 +155,7 @@ def test_qbook_render(tmp_path):
         nb, parsed = params['nb'], params['nb_parsed']
         # There will be 7 cells if output left in notebook.
         assert len(nb.cells) == 5
+        # Check contents of first cell.
         p1 = parsed[1]
         assert p1['lines'] == [
             'Find this notebook on the web at '
@@ -169,6 +171,7 @@ def test_qbook_render(tmp_path):
             if cell_info['cell_type'] != 'markdown':
                 continue
             assert not any(isinstance(e, pf.RawBlock) for e in cell_info)
+        # Check contents of last cell.
         pm1 = parsed[-1]
         assert (pm1['lines'] ==
                 [f'{lang} thing',
@@ -199,9 +202,10 @@ def test_nb_output(tmp_path):
                                 'nb-strip-header-nos': False}}
     params = make_new_book(tmp_path, 'Python', extra_config)
     parsed = params['nb_parsed']
-    # Check nothing is filtered.
+    # Check nothing is filtered, at a first pass, by checking
+    # parts of the parsed first and last cells.
     assert parsed[1]['types'] == [pf.Div, pf.Para, pf.Div, pf.Header]
-    assert parsed[-1]['types'] == [pf.Div, pf.Para, pf.Div, pf.Para]
+    assert parsed[-1]['types'] == [pf.Para, pf.Div, pf.Para]
     # Python / R span to start last cell.
     assert [type(v) for v in parsed[-1]['pfp'][0].content] == [pf.Span]
     # Header has span around number.
@@ -213,7 +217,7 @@ def test_nb_output(tmp_path):
     params = make_new_book(tmp_path, 'Python', extra_config)
     parsed = params['nb_parsed']
     # Check everything is filtered.
-    assert parsed[1]['types'] == [pf.Para, pf.Para, pf.Header]
+    assert parsed[1]['types'] == [pf.Para, pf.Para, pf.Para, pf.Header]
     assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
     # Now we have the contents of the Python span, not the span.
     assert ([type(v) for v in parsed[-1]['pfp'][0].content] ==
@@ -229,7 +233,7 @@ def test_nb_output(tmp_path):
     # The nb only is not flattened
     assert parsed[1]['types'] == [pf.Div, pf.Para, pf.Div, pf.Header]
     # But the Python block is.
-    assert parsed[-1]['types'] == [pf.Div, pf.Para, pf.Para, pf.Para]
+    assert parsed[-1]['types'] == [pf.Para, pf.Para, pf.Para]
     # We have the contents of the span, from span flattening.
     assert ([type(v) for v in parsed[-1]['pfp'][0].content] ==
             [pf.Str, pf.Space, pf.Str])
