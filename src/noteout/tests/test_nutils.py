@@ -118,4 +118,4 @@ def test_fill_params():
     meta['noteout'] = {'interact-url': 'https://example.com'}
     exp = default.copy()
     exp['interact-url'] = 'https://example.com'
-    assert fill_params(meta) == exp
+    assert fill_params(meta, ('noteout.interact-url',)) == exp
