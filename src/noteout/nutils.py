@@ -21,7 +21,7 @@ _META_DEFAULTS = {
     'noteout.nb-format': 'ipynb',
     'quarto-doc-params.out_format': None,
     'quarto-doc-params.output_directory': '.',
-    'noteout.strip-header-nos': True,
+    'noteout.nb-strip-header-nos': True,
     'noteout.nb-flatten-divspans': ['+'],
 }
 
@@ -238,7 +238,8 @@ def fill_params(meta, required_keys=(), key_defaults=_META_DEFAULTS):
         p[key.split('.')[-1]] = v
     p['output_directory'] = Path(p['output_directory'])
     # Some calculated defaults.
-    p['url-nb-suffix'] = mget('noteout.url-nb-suffix', '.' + p['nb-format'])
+    p['interact-nb-suffix'] = mget(
+        'noteout.interact-nb-suffix', '.' + p['nb-format'])
     p['nb_out_path'] = p['output_directory'] / p['nb-dir']
     flat_ds = list(p['nb-flatten-divspans'])
     if '+' in flat_ds:

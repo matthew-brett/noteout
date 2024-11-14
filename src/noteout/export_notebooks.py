@@ -82,7 +82,7 @@ def strip_cells(elem, doc):
     params = doc._wnb_params
     if not isinstance(elem, (pf.Div, pf.Span)):
         return
-    if (params['strip-header-nos'] and
+    if (params['nb-strip-header-nos'] and
         isinstance(elem, pf.Span) and
         'header-section-number' in elem.classes):
         return []

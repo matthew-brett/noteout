@@ -155,8 +155,9 @@ def get_nb_links(elem, doc, n_dfs):
     params['dl_text'] = ('notebook' if n_dfs == 0 else
                          ('zip with notebook + data file' +
                           ('s' if n_dfs > 1 else '')))
-    params['inter_url'] = ('{interact-url}{name}{url-nb-suffix}'
-                           .format(**params))
+    params['inter_url'] = (
+        '{interact-url}{name}{interact-nb-suffix}'
+        .format(**params))
     if doc.get_metadata('quarto-doc-params.out_format') == 'html':
         txt = '''\
 <div class="nb-links">
