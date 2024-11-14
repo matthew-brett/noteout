@@ -78,3 +78,35 @@ def test_nb_outputs(in_tmp_path):
     assert (nb_dir / 'a_notebook.zip').is_file()
     assert (nb_data_dir / 'df.csv').is_file()
     assert (nb_data_dir / 'df2.csv').is_file()
+
+
+def test_no_output(in_tmp_path):
+    # By default, we output the notebooks.
+    in_doc = q2doc(_with_nb(tmnb.SIMPLE_NB))
+    nb_dir = Path('notebooks')
+    filter_doc(in_doc, enb)
+    out_nb_path = nb_dir / 'a_notebook.ipynb'
+    assert out_nb_path.is_file()
+    shutil.rmtree(nb_dir)
+    # If we specify the output format, by default, this has no effect.
+    # (We still output the notebook).
+    in_doc.metadata['quarto-doc-params'] = {'out_format': 'latex'}
+    filter_doc(in_doc, enb)
+    assert out_nb_path.is_file()
+    shutil.rmtree(nb_dir)
+    # But if we set nb-build-formats, this restricts the build to those
+    # formats.
+    in_doc.metadata['noteout'] = {'nb-build-formats': ['html']}
+    filter_doc(in_doc, enb)
+    assert not nb_dir.is_dir()
+    # Unless there's a '*' in the build formats.
+    in_doc.metadata['noteout'] = {'nb-build-formats': ['html', '*']}
+    filter_doc(in_doc, enb)
+    assert out_nb_path.is_file()
+    shutil.rmtree(nb_dir)
+    # Or the build format matches nb-build-formats.
+    in_doc.metadata['noteout'] = {'nb-build-formats': ['html']}
+    in_doc.metadata['quarto-doc-params'] = {'out_format': 'html'}
+    filter_doc(in_doc, enb)
+    assert out_nb_path.is_file()
+    shutil.rmtree(nb_dir)
