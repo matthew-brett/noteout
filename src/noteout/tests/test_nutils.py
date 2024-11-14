@@ -68,7 +68,7 @@ T1
 
 ::: cell
 
-```{.r .code-cell}
+```{.r .cell-code}
 a <- 1
 ```
 
@@ -78,7 +78,7 @@ T2
 
 ::: cell
 
-```{.python .code-cell}
+```{.python .cell-code}
 c = 1
 c
 ```
@@ -89,5 +89,5 @@ T2'''
     assert quartoize(in_str) == exp_str
     assert (
         quartoize('Text\n```{r eval=True}\na <- 1\n```') ==
-        'Text\n\n::: cell\n```{.r .code-cell eval=True}\na <- 1\n```'
+        'Text\n\n::: cell\n```{.r .cell-code eval=True}\na <- 1\n```'
         '\n\n:::\n')

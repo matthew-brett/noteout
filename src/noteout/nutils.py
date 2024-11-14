@@ -41,7 +41,7 @@ _BACKTICK_BLOCK_RE = re.compile(
     re.VERBOSE | re.MULTILINE | re.DOTALL)
 
 _BACKTICK_SUB_PAT = ('\n::: cell\n'
-                     r'\g<starti>```{.\g<lang> .code-cell\g<lparams>}'
+                     r'\g<starti>```{.\g<lang> .cell-code\g<lparams>}'
                      r'\g<block>\g<endi>```'
                      '\n\n:::\n')
 
