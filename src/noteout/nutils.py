@@ -8,6 +8,38 @@ import re
 import panflute as pf
 
 
+class NO_DEFAULT:
+    """ Indicates there should be no default value
+    """
+
+
+# Defaults for noteout and quarto-doc-params.
+_META_DEFAULTS = {
+    'noteout.book-url-root': NO_DEFAULT,
+    'noteout.interact-url': NO_DEFAULT,
+    'noteout.nb-dir': 'notebooks',
+    'noteout.nb-format': 'ipynb',
+    'quarto-doc-params.out_format': None,
+    'quarto-doc-params.output_directory': '.',
+    'noteout.strip-header-nos': True,
+    'noteout.nb-flatten-divspans': ['+'],
+}
+
+# Meaning of '+' in noteout.nb-flatten-divspans.
+_FLATTEN_DS_PLUS = ('header-section-number', 'nb-only')
+
+
+_BACKTICK_BLOCK_RE = re.compile(
+    r'''^
+    ^(\s*)```\s*
+    \{(?P<lang>\w+)\}
+    \s*$
+    (?P<block>.*?)
+    ^(\s*)```\s*$
+    ''',
+    re.VERBOSE | re.MULTILINE | re.DOTALL)
+
+
 # Regular expression to identify code reading data.
 READ_RE = re.compile(
     r'''^\s*
@@ -23,10 +55,6 @@ READ_RE = re.compile(
 
 class FilterError(ValueError):
     """ Exception for invalid values in filters
-    """
-
-class NO_DEFAULT:
-    """ Indicates there should be no default value
     """
 
 
@@ -76,6 +104,14 @@ class Filter:
                              doc=doc)
 
 
+def quartoize(in_md):
+    return _BACKTICK_BLOCK_RE.sub(
+        r'''
+::: cell\1``` {.\2 .code-cell}\3\4```
+:::
+''', in_md)
+
+
 def fmt2fmt(inp, in_fmt=None, out_fmt='gfm', standalone=True):
     """ Convert doc `inp` in one Pandoc / Panflute format to another
 
@@ -97,6 +133,9 @@ def fmt2fmt(inp, in_fmt=None, out_fmt='gfm', standalone=True):
     out : :class:`pf.Element` or str
         Output in Panflute or text format.
     """
+    if in_fmt == 'quarto-like':
+        inp = quartoize(inp)
+        in_fmt = 'markdown'
     return pf.convert_text(
         inp,
         input_format=in_fmt if in_fmt else (
@@ -164,21 +203,6 @@ def find_data_files(nb):
         for m in READ_RE.finditer(cell['source']):
             out_fnames.append(m.groups()[-1])
     return sorted(set(out_fnames))
-
-
-_META_DEFAULTS = {
-    'noteout.book-url-root': NO_DEFAULT,
-    'noteout.interact-url': NO_DEFAULT,
-    'noteout.nb-dir': 'notebooks',
-    'noteout.nb-format': 'ipynb',
-    'quarto-doc-params.out_format': None,
-    'quarto-doc-params.output_directory': '.',
-    'noteout.strip-header-nos': True,
-    'noteout.nb-flatten-divspans': ['+'],
-}
-
-# Meaning of '+' in flatten divspans
-_FLATTEN_DS_PLUS = ('header-section-number', 'nb-only')
 
 
 def fill_params(meta, required_keys=(), key_defaults=_META_DEFAULTS):

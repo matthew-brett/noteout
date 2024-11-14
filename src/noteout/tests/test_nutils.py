@@ -3,7 +3,7 @@
 
 import jupytext as jpt
 
-from noteout.nutils import find_data_files
+from noteout.nutils import find_data_files, quartoize
 
 
 def test_find_data_files(tmp_path):
@@ -45,3 +45,41 @@ df <- read.csv("data/df.csv")
 df1 <- read.csv("data/df.csv")
 ```''', 'Rmd')
     assert find_data_files(nb) == ['data/df.csv', 'data/df2.csv']
+
+
+def test_quartoize():
+    assert quartoize('') == ''
+    in_str = '''\
+T1
+
+```{r}
+a <- 1
+```
+
+T2
+
+```{python}
+c = 1
+c
+```
+T2'''
+    exp_str = '''\
+T1
+
+::: cell
+``` {.r .code-cell}
+a <- 1
+```
+:::
+
+T2
+
+::: cell
+``` {.python .code-cell}
+c = 1
+c
+```
+:::
+
+T2'''
+    assert quartoize(in_str) == exp_str

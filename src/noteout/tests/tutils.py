@@ -77,3 +77,10 @@ def filter_two_pass(doc):
         doc = filter_doc(doc, filt)
     doc.metadata = {}
     return doc
+
+
+q2fmt = partial(fmt2fmt, in_fmt='quarto-like')
+
+q2md = partial(q2fmt, out_fmt='markdown')
+
+q2doc = partial(q2fmt, out_fmt='panflute')

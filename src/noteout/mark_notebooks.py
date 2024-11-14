@@ -89,6 +89,7 @@ import panflute as pf
 
 from noteout.nutils import (fmt2fmt, FilterError, is_div_class, name2title,
                             find_data_files, fill_params)
+from noteout.export_notebooks import proc_nb_text
 
 
 _REQUIRED_NOTEOUT_KEYS = ('noteout.book-url-root',
@@ -183,8 +184,8 @@ def action(elem, doc):
     # Detect data files (for download links).
     nb_text = pf.convert_text(elem_out,
                               input_format='panflute',
-                              output_format='markdown')
-    dfs = find_data_files(jpt.reads(nb_text, 'Rmd'))
+                              output_format='gfm')
+    dfs = find_data_files(jpt.reads(proc_nb_text(nb_text), 'Rmd'))
     # Add notes at beginning and end.
     header, footer = proc_nb_div(elem, doc, len(dfs))
     return list(header) + elem_out + list(footer)

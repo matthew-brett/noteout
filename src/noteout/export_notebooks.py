@@ -39,7 +39,7 @@ FENCE_START_RE = re.compile(r'^```\s*(\w+)$', re.MULTILINE)
 COMMENT_RE = re.compile(r'<!--.*?-->', re.MULTILINE | re.DOTALL)
 
 
-def proc_text(nb_text):
+def proc_nb_text(nb_text):
     """ Process notebook GFM markdown
     """
     # Strip comments
@@ -132,7 +132,7 @@ def write_notebook_files(nb_doc, attrs):
     out_nb_dir.mkdir(parents=True, exist_ok=True)
     nb_md = ('# {title}\n\n\n'.format(**attrs) +
              fmt2fmt(nb_doc, in_fmt='panflute'))
-    nb = jpt.reads(proc_text(nb_md), 'Rmd')
+    nb = jpt.reads(proc_nb_text(nb_md), 'Rmd')
     jpt.write(nb, out_nb_fpath, fmt=attrs['nb-format'])
     # Write associated data files.
     if not (dfs := find_data_files(nb)):
