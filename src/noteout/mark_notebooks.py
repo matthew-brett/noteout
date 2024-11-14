@@ -3,18 +3,18 @@
 
 Filtering is in two stages (see below for why):
 
-* Replace notebook Pandoc divs with notebook start and end markers.  (Why?
+1. Replace notebook Pandoc divs with notebook start and end markers.  (Why?
   Because the divs prevent Quarto from doing its normal contents table.  And
   because we want to drop #nte-my_notebook section markers which we can use to
   reference the notebook). We drop download and interaction links into these
   section markers.  Also - because we want to use callout-notes for the
   notebook head and tail markers, and these need to be processed before Quarto
   gets to them, at the (in Quarto's terms) ``pre-ast`` phase of filtering.
-* (At some point, run the Quarto filters, then):
-* Parse the start and end markers to find the notebooks, then write out the
-  notebook files after suitable processing. In this phase, we work out which
-  notebooks have data files associated, and write out zips for download of
-  notebooks with data files.
+2. (At some point, run the Quarto filters, then: )Parse the start and end
+  markers to find the notebooks, then write out the notebook files after
+  suitable processing. In this phase, we work out which notebooks have data
+  files associated, and write out zips for download of notebooks with data
+  files.
 
 This first pass does these steps:
 

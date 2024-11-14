@@ -3,7 +3,7 @@
 
 See ``mark_notebooks.py`` for the overall structure of processing.
 
-This is the second of the three processing steps for notebooks.
+This is the second of the two processing steps for notebooks.
 
 In this step, we parse the start and end markers to find the notebooks, then
 write out the notebook files after suitable processing.
@@ -13,11 +13,14 @@ The suitable processing is:
 * Fix up callout blocks
 * Flatten any divspans that need flattening (see `strip_cells`)
 * Drop comment marks before and after notebooks.
-* Output to GFM
+* Output to Github Flavored Markdown.
+* If there are data files read in the notebook, also:
+    * Copy data files to notebook output directory.
+    * Make a zip file for notebook with read data files.
 
 We detect notebooks simply by starting notebooks after a start marker, and
-finishing before the end marker, using a search through the top level of
-tree, and any divs contained therein.
+finishing before the end marker, using a search through the top level of tree,
+and any divs contained therein.
 """
 
 from pathlib import Path

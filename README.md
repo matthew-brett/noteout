@@ -77,9 +77,6 @@ filters:
     path: filters/export_notebooks.py
   - at: post-quarto
     type: json
-    path: filters/add_notebook_links.py
-  - at: post-quarto
-    type: json
     path: filters/filter_nb_only.py
 
 noteout:
@@ -90,9 +87,11 @@ noteout:
   nb-dir: notebooks
 ```
 
-By default, Noteout writes your notebooks to your Quarto `output-dir`. In the example above, Noteout would write `a_notebook.Rmd` and `b_notebook.Rmd` to your `output-dir` directory.
+By default, Noteout writes your notebooks to your Quarto `output-dir`. In the
+example above, Noteout would write `a_notebook.Rmd` and `b_notebook.Rmd` to
+your `output-dir` directory.
 
 See the [Resampling book](https://resampling-stats.github.io/resampling-with)
 for a fully worked example, with extra configuration, and the [Resampling-with
-Github repository](https://github.com/resampling-stats/resampling-with) for
-the configuration and text source files.
+Github repository](https://github.com/resampling-stats/resampling-with) for the
+configuration and text source files.

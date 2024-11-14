@@ -1,9 +1,12 @@
 """ Test detection and writing of notebooks
 
-Here we are doing the second step of three.
+Here we are doing the second pass of the two-pass method.
 
 * Parse the start and end markers to find the notebooks, then write out the
   notebook files after suitable processing.
+* If there are data files read in the notebook, also:
+    * Copy data files to notebook output directory.
+    * Make a zip file for notebook with read data files.
 """
 
 from pathlib import Path

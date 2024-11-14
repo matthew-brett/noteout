@@ -28,6 +28,7 @@ _META_DEFAULTS = {
 # Meaning of '+' in noteout.nb-flatten-divspans.
 _FLATTEN_DS_PLUS = ('header-section-number', 'nb-only')
 
+# Regular expression to detect ```{r} etc code blocks.
 _BACKTICK_BLOCK_RE = re.compile(
     r'''^
     ^(?P<starti>\s*)```\s*
@@ -40,6 +41,7 @@ _BACKTICK_BLOCK_RE = re.compile(
     ''',
     re.VERBOSE | re.MULTILINE | re.DOTALL)
 
+# Replacement pattern for ```{r} etc code blocks.
 _BACKTICK_SUB_PAT = ('\n::: cell\n'
                      r'\g<starti>```{.\g<lang> .cell-code\g<lparams>}'
                      r'\g<block>\g<endi>```'
@@ -75,7 +77,9 @@ class Filter:
     * ``main`` with which to run the filter.
 
     It anticipates filtering ``div`` and ``span`` elements in the Panflute
-    output, and implements 
+    output, and implements a simple dropping of ``div``s or ``span``s with
+    names specified somehow via the ``get_bad_names`` method.  Typically this
+    will be via metadata in the document to be filtered.
     """
 
     @classmethod
@@ -110,6 +114,49 @@ class Filter:
 
 
 def quartoize(in_md):
+    """ Parse Markdown to be compatible with Quarto filtering
+
+    Quarto noteboks have executable code blocks of form::
+
+        ```{r}
+        a <- 1
+        a
+        ```
+
+    Pandoc does not process these as code blocks, and Quarto does some
+    preprocessing to allow Pandoc to work with these.  Specifically Quarto
+    parsing ends up with the equivalent of this Markdown::
+
+        ::: cell
+
+        ```{.r .cell-code}
+        a <- 1
+        a
+        ```
+
+        :::
+
+    This function does a version of preprocessing on Markdown text, so we can
+    get closer to Quarto parsing in our tests.
+
+    Parameters
+    ----------
+    in_md : str
+        Text in Markdown format.
+
+    Returns
+    -------
+    out_md : str
+        Text in Markdown format with backtick code blocks in RMarkdown
+        reprocessed to be standard blocks with lang as class, and wrapped in a
+        cell div.
+
+    Notes
+    -----
+    You won't want to use this workaround in production, but you may want to
+    use it for tests.  For example, you can use it for simulating Quarto filter
+    input.
+    """
     return _BACKTICK_BLOCK_RE.sub(_BACKTICK_SUB_PAT, in_md)
 
 
@@ -180,6 +227,11 @@ def is_div_class(elem, class_names):
 
 
 def name2title(name):
+    """ Give human-friendly title from notebook name
+
+    `name` will generally be a valid variable name, containing only
+    alphanumeric characters and underscores.
+    """
     return name.replace('_', ' ').capitalize()
 
 
@@ -189,7 +241,7 @@ def find_data_files(nb):
     Parameters
     ----------
     nb : dict
-        Notebook.
+        Parsed notebook in dictionary form.
 
     Returns
     -------
