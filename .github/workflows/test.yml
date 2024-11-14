@@ -63,4 +63,4 @@ jobs:
         run: pip install -r test-requirements.txt
 
       - name: Run tests
-        run: pytest noteout
+        run: pytest src/noteout
