@@ -14,7 +14,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      QUARTO_VER: "1.4.51"
+      QUARTO_VER: "1.6.1"
+      PANDOC_VER: "3.2"
 
     steps:
       - uses: actions/cache@v2
@@ -32,17 +33,13 @@ jobs:
         run: |
           sudo Rscript -e 'install.packages(c("quarto", "reticulate"))'
 
-      - name: Install pandoc
+      - name: Install quarto and matching pandoc
         run: |
           sudo apt install -y curl
-          curl -LO https://github.com/jgm/pandoc/releases/download/2.14.1/pandoc-2.14.1-1-amd64.deb
-          sudo dpkg --install pandoc-2.14.1-1-amd64.deb
-
-      - name: Install quarto
-        run: |
-          sudo apt install -y curl
-          curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v$QUARTO_VER/quarto-$QUARTO_VER-linux-amd64.deb -o quarto.deb
-          sudo dpkg --install quarto.deb
+          curl -L https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VER}/quarto-${QUARTO_VER}-linux-amd64.deb -o quarto.deb
+          # PANDOC appends -1 to the archive root name for .deb packages.
+          curl -L https://github.com/jgm/pandoc/releases/download/${PANDOC_VER}/pandoc-${PANDOC_VER}-1-amd64.deb -o pandoc.deb
+          sudo dpkg --install quarto.deb pandoc.deb
           # Install Tex setup to build PDF.
           quarto install tinytex
 

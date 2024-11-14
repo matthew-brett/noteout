@@ -153,6 +153,9 @@ def quartoize(in_md):
 
     Notes
     -----
+    See `https://github.com/quarto-dev/quarto-cli/discussions/11393`_ for a
+    discussion of Quarto vs Pandoc filtering.
+
     You won't want to use this workaround in production, but you may want to
     use it for tests.  For example, you can use it for simulating Quarto filter
     input.
