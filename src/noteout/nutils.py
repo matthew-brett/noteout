@@ -28,17 +28,22 @@ _META_DEFAULTS = {
 # Meaning of '+' in noteout.nb-flatten-divspans.
 _FLATTEN_DS_PLUS = ('header-section-number', 'nb-only')
 
-
 _BACKTICK_BLOCK_RE = re.compile(
     r'''^
-    ^(\s*)```\s*
-    \{(?P<lang>\w+)\}
+    ^(?P<starti>\s*)```\s*
+    \{(?P<lang>\w+)
+    (?P<lparams>\s+.*?)?
+    \}
     \s*$
     (?P<block>.*?)
-    ^(\s*)```\s*$
+    ^(?P<endi>\s*)```\s*$
     ''',
     re.VERBOSE | re.MULTILINE | re.DOTALL)
 
+_BACKTICK_SUB_PAT = ('\n::: cell\n'
+                     r'\g<starti>```{.\g<lang> .code-cell\g<lparams>}'
+                     r'\g<block>\g<endi>```'
+                     '\n\n:::\n')
 
 # Regular expression to identify code reading data.
 READ_RE = re.compile(
@@ -105,11 +110,7 @@ class Filter:
 
 
 def quartoize(in_md):
-    return _BACKTICK_BLOCK_RE.sub(
-        r'''
-::: cell\1``` {.\2 .code-cell}\3\4```
-:::
-''', in_md)
+    return _BACKTICK_BLOCK_RE.sub(_BACKTICK_SUB_PAT, in_md)
 
 
 def fmt2fmt(inp, in_fmt=None, out_fmt='gfm', standalone=True):
