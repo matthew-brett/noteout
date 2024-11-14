@@ -7,6 +7,7 @@ Here we are doing the second step of three.
 """
 
 from pathlib import Path
+import shutil
 
 import noteout.export_notebooks as enb
 
@@ -38,7 +39,7 @@ def test_basic(in_tmp_path):
     # We do write out a notebook.
     out_nb_path = Path('notebooks') / 'a_notebook.Rmd'
     assert out_nb_path.is_file()
-    nb_back = fmt2md(out_nb_path.read_text())
+    nb_back = q2md(out_nb_path.read_text())
     assert nb_back == q2md(
         MARKED_HEADER_FMT.format(name='a_notebook',
                                  title='This is a notebook')
@@ -46,35 +47,27 @@ def test_basic(in_tmp_path):
 
 
 def test_nb_outputs(in_tmp_path):
-    metadata = {'noteout': {
-        'nb-format': 'Rmd',
-        'book-url-root': 'https://resampling-stats.github.io/latest-r',
-        'interact-url': "/interact/lab/index.html?path="}}
+    metadata = {'noteout': {'nb-format': 'Rmd'}}
     data_path = Path('data')
     data_path.mkdir()
     in_data = data_path / 'df.csv'
     in_data.write_text('a,b\n1,2\n3,4')
-    nb_text = '''\
-```{r}
-df <- read.csv("data/df.csv")
-```'''
-    in_doc = q2doc(_with_nb(nb_text))
+    in_doc = q2doc(_with_nb(tmnb.DATA_NB))
     in_doc.metadata = metadata.copy()
-    out_with_data = filter_doc_nometa(in_doc, enb)
-    out_nb_path = Path('notebooks') / 'a_notebook.Rmd'
-    assert (out_nb_path / 'data').is_dir()
-    assert (out_nb_path / 'data' / 'df.csv').is_file()
-    assert (out_nb_path / 'a_notebook.zip').is_file()
+    filter_doc_nometa(in_doc, enb)
+    nb_dir = Path('notebooks')
+    assert (nb_dir / 'a_notebook.Rmd').is_file()
+    nb_data_dir = nb_dir / 'data'
+    assert (nb_data_dir / 'df.csv').is_file()
+    assert (nb_dir / 'a_notebook.zip').is_file()
     # Two data files.
+    shutil.rmtree(nb_dir)
     in_data = data_path / 'df2.csv'
     in_data.write_text('a,b\n1,2\n3,4')
-    (out_nb_path / 'a_notebook.Rmd').write_text(
-        '''\
-```{r}
-df <- read.csv("data/df.csv")
-df2 <- read.csv("data/df2.csv")
-```''')
-    out_with_data2 = filter_doc_nometa(in_doc, enb)
-    assert (out_nb_path / 'data' / 'df2.csv').is_file()
-    data_rmd = data_rmd.replace('+ data file', '+ data files')
-    assert fmt2md(out_with_data2) == q2md(data_rmd)
+    datas_in_doc = q2doc(_with_nb(tmnb.DATAS_NB))
+    datas_in_doc.metadata = metadata.copy()
+    filter_doc_nometa(datas_in_doc, enb)
+    assert (nb_dir / 'a_notebook.Rmd').is_file()
+    assert (nb_dir / 'a_notebook.zip').is_file()
+    assert (nb_data_dir / 'df.csv').is_file()
+    assert (nb_data_dir / 'df2.csv').is_file()
