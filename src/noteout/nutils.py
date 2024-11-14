@@ -17,6 +17,7 @@ class NO_DEFAULT:
 _META_DEFAULTS = {
     'noteout.book-url-root': NO_DEFAULT,
     'noteout.interact-url': NO_DEFAULT,
+    'noteout.nb-build-formats': ['*'],
     'noteout.nb-dir': 'notebooks',
     'noteout.nb-format': 'ipynb',
     'quarto-doc-params.out_format': None,
@@ -287,9 +288,10 @@ def fill_params(meta, required_keys=(), key_defaults=_META_DEFAULTS):
     doc = pf.Doc(metadata=meta)
     mget = lambda k, d : doc.get_metadata(k, d)
     for key, default in key_defaults.items():
-        v = mget(key, default)
-        if v is NO_DEFAULT and key in required_keys:
-            raise FilterError(f'{key} must be defined in metadata')
+        if (v := mget(key, default)) is NO_DEFAULT:
+            if key in required_keys:
+                raise FilterError(f'{key} must be defined in metadata')
+            continue
         p[key.split('.')[-1]] = v
     p['output_directory'] = Path(p['output_directory'])
     # Some calculated defaults.

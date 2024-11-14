@@ -181,6 +181,9 @@ def write_zip(paths, out_path):
 
 def finalize(doc):
     params = fill_params(doc.metadata)
+    build_formats = params['nb-build-formats']
+    if '*' not in build_formats and params['out_format'] not in build_formats:
+        return
     for attrs, nb_doc in find_notebooks(doc):
         nb_doc._wnb_params = params  # for strip_cells
         nb_doc = nb_doc.walk(strip_cells)

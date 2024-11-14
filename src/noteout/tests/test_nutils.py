@@ -1,9 +1,14 @@
 """ Test nutils module
 """
 
-import jupytext as jpt
+from pathlib import Path
 
-from noteout.nutils import find_data_files, quartoize
+import jupytext as jpt
+import panflute as pf
+
+from noteout.nutils import find_data_files, quartoize, fill_params, FilterError
+
+import pytest
 
 
 def test_find_data_files(tmp_path):
@@ -91,3 +96,26 @@ T2'''
         quartoize('Text\n```{r eval=True}\na <- 1\n```') ==
         'Text\n\n::: cell\n```{.r .cell-code eval=True}\na <- 1\n```'
         '\n\n:::\n')
+
+
+def test_fill_params():
+    meta = pf.MetaMap()
+    default = {
+        'nb-build-formats': ['*'],
+        'nb-dir': 'notebooks',
+        'nb-format': 'ipynb',
+        'nb-strip-header-nos': True,
+        'nb-flatten-divspans': {'header-section-number', 'nb-only'},
+        'out_format': None,
+        'output_directory': Path(),
+        'interact-nb-suffix': '.ipynb',
+        'nb_out_path': Path('.') / 'notebooks'
+    }
+    assert fill_params(meta) == default
+    with pytest.raises(FilterError,
+                       match='noteout.interact-url must be defined'):
+        fill_params(meta, ('noteout.interact-url',))
+    meta['noteout'] = {'interact-url': 'https://example.com'}
+    exp = default.copy()
+    exp['interact-url'] = 'https://example.com'
+    assert fill_params(meta) == exp
