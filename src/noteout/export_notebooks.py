@@ -177,11 +177,14 @@ def write_zip(paths, out_path):
 
 
 def finalize(doc):
+    from noteout.nutils import fmt2fmt
     params = fill_params(doc.metadata)
     for attrs, nb_doc in find_notebooks(doc):
+        pf.debug(fmt2fmt(nb_doc))
         nb_doc._wnb_params = params  # for strip_cells
         nb_doc = nb_doc.walk(strip_cells)
         write_notebook_files(nb_doc, {**attrs, **params})
+        pf.debug(fmt2fmt(nb_doc))
 
 
 def action(elem, doc):

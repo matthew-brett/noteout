@@ -10,9 +10,9 @@ from pathlib import Path
 
 import noteout.export_notebooks as enb
 
-from noteout.nutils import fmt2fmt, filter_doc
+from noteout.nutils import filter_doc
 
-from .tutils import fmt2md, filter_doc_nometa
+from .tutils import q2md, q2doc, fmt2md, filter_doc_nometa
 from . import test_mark_notebooks as tmnb
 
 
@@ -30,7 +30,7 @@ def _with_nb(nb_text, link_text=tmnb.DEF_LINK_TEXT):
 
 def test_basic(in_tmp_path):
     marked_rmd = _with_nb(tmnb.SIMPLE_NB)
-    in_doc = fmt2fmt(marked_rmd, out_fmt='panflute')
+    in_doc = q2doc(marked_rmd)
     in_doc.metadata['noteout'] = {'nb-format': 'Rmd'}
     out_doc = filter_doc(in_doc, enb)
     # We don't modify the input document.
@@ -39,7 +39,7 @@ def test_basic(in_tmp_path):
     out_nb_path = Path('notebooks') / 'a_notebook.Rmd'
     assert out_nb_path.is_file()
     nb_back = fmt2md(out_nb_path.read_text())
-    assert nb_back == fmt2md(
+    assert nb_back == q2md(
         MARKED_HEADER_FMT.format(name='a_notebook',
                                  title='This is a notebook')
         + tmnb.SIMPLE_NB)
@@ -58,7 +58,7 @@ def test_nb_outputs(in_tmp_path):
 ```{r}
 df <- read.csv("data/df.csv")
 ```'''
-    in_doc = fmt2fmt(_with_nb(nb_text), out_fmt='panflute')
+    in_doc = q2doc(_with_nb(nb_text))
     in_doc.metadata = metadata.copy()
     out_with_data = filter_doc_nometa(in_doc, enb)
     out_nb_path = Path('notebooks') / 'a_notebook.Rmd'
@@ -74,7 +74,7 @@ df <- read.csv("data/df.csv")
 df <- read.csv("data/df.csv")
 df2 <- read.csv("data/df2.csv")
 ```''')
-    out_with_data2 = filter_doc_nometa(in_doc, anbL)
+    out_with_data2 = filter_doc_nometa(in_doc, enb)
     assert (out_nb_path / 'data' / 'df2.csv').is_file()
     data_rmd = data_rmd.replace('+ data file', '+ data files')
-    assert fmt2md(out_with_data2) == fmt2md(data_rmd)
+    assert fmt2md(out_with_data2) == q2md(data_rmd)
