@@ -50,3 +50,9 @@ noteout:
   interact-url: https://example.com?filepath=python-book/
   book-url-root: https://example.com
   nb-dir: .
+
+processing:
+  language: python
+  kernel-name: python
+  kernel-display: "Python (Pyodide)"
+  interact-data-root: null
