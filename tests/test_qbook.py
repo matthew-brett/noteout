@@ -16,6 +16,7 @@ import jupytext
 
 import panflute as pf
 
+from noteout.process_notebooks import NBProcessor
 
 QBOOK_PATH = Path(__file__).parent.parent.joinpath('quarto-example')
 NB_ONLY_STR = 'This appears only in the notebook'
@@ -245,3 +246,15 @@ def test_nb_output(tmp_path):
 def test_pdf_smoke(tmpdir):
     params = make_new_book(tmpdir, 'Python', {}, formats=('pdf',))
     assert Path(params['book_path'] / '_book' / 'Quarto-example.pdf').is_file()
+
+
+def test_proc_nbs(tmp_path):
+    params = make_new_book(tmp_path, 'Python', {}, formats=('html',))
+    book_out = params['out_path'] / '_book'
+    html_files = sorted(book_out.glob('**/*.html'))
+    assert len(html_files) == 4
+    out_jl = tmp_path / 'jl_out'
+    assert not out_jl.is_dir()
+    nbp = NBProcessor(params['out_path'] / '_quarto.yml', out_jl)
+    nbp.process()
+    assert out_jl.is_dir()
