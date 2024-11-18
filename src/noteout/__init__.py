@@ -1,4 +1,4 @@
-""" Notebook parsing filters for Pandoc
+""" Pandoc / Quarto filters and scripts for embedded notebooks
 """
 
 __version__ = '1.0.0a1'

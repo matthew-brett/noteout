@@ -95,3 +95,12 @@ See the [Resampling book](https://resampling-stats.github.io/resampling-with)
 for a fully worked example, with extra configuration, and the [Resampling-with
 Github repository](https://github.com/resampling-stats/resampling-with) for the
 configuration and text source files.
+
+## Running the tests
+
+From the repository directory:
+
+```bash
+pip install ".[test]"
+pytest tests
+```

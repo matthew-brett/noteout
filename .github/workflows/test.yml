@@ -23,7 +23,7 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.local
-          key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }}-${{ hashFiles('test-requirements.txt') }}
+          key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
 
       - name: Install R
         run: |
@@ -57,7 +57,7 @@ jobs:
           flit install -s
 
       - name: Install test requirements
-        run: pip install -r test-requirements.txt
+        run: pip install ".[test]"
 
       - name: Run tests
         run: pytest tests

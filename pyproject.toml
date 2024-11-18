@@ -2,22 +2,37 @@
 requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "noteout"
-author = "Matthew Brett"
-author-email = "matthew.brett@gmail.com"
-home-page="https://github.com/matthew-brett/noteout"
+[project]
+name = "noteout"
+dynamic = ["version", "description"]
+authors = [
+    { name = "Matthew Brett", email = "matthew.brett@gmail.com" },
+]
+maintainers = [
+    { name = "Matthew Brett", email = "matthew.brett@gmail.com" },
+]
+license = { text = "BSD license" }
 classifiers = ["License :: OSI Approved :: BSD License",
                "Programming Language :: Python :: 3"]
-description-file="README.md"
-# Check against requirements.txt
-requires = [
+readme="README.md"
+dependencies = [
     'panflute',
     'jupytext',
+    'beautifulsoup4'
 ]
 requires-python=">=3.6"
 
-[tool.flit.scripts]
+[project.urls]
+Homepage = "http://github.com/matthew-brett/noteout"
+
+[project.optional-dependencies]
+test = [
+    'pytest',
+    'pandas',
+    'matplotlib'
+]
+
+[project.scripts]
 noteout-filter-divspans = "noteout.filter_divspans:main"
 noteout-write-notebooks = "noteout.write_notebooks:main"
 noteout-mark-notebooks = "noteout.mark_notebooks:main"
