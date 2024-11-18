@@ -52,7 +52,7 @@ def proc_nb_text(nb_text):
     return FENCE_START_RE.sub(r'```{\1}', txt)
 
 
-def filter_callout_header(elem):
+def proc_callout_header(elem):
     for node in elem.content:
         if 'callout-title-container' in node.classes:
             n0, = node.content
@@ -61,13 +61,32 @@ def filter_callout_header(elem):
     return []
 
 
-def filter_callout_note(elem):
+def filter_strip_header_nos(elem, doc):
+    if not isinstance(elem, pf.Span):
+        return
+    if (doc._wnb_params['nb-strip-header-nos'] and
+        'header-section-number' in elem.classes):
+        return []
+
+
+def filter_flatten_divspans(elem, doc):
+    params = doc._wnb_params
+    if not isinstance(elem, (pf.Div, pf.Span)):
+        return
+    # Replace various containers with their contents.
+    if params['nb-flatten-divspans'].intersection(elem.classes):
+        return list(elem.content)
+
+
+def filter_callout_note_classic(elem, doc):
+    if not isinstance(elem, pf.Div) or 'callout-note' not in elem.classes:
+        return
     header = []
     body = []
     for node in elem.content:
         assert isinstance(node, pf.Div)
         if 'callout-header' in node.classes:
-            header = filter_callout_header(node)
+            header = proc_callout_header(node)
         if 'callout-body-container' in node.classes:
             body = list(node.content)
     return header + body + (
@@ -76,28 +95,20 @@ def filter_callout_note(elem):
     )
 
 
-def filter_out(elem):
-    return [e for e in elem.content
-            if 'cell-code' in getattr(e, 'classes', [])]
+def filter_cell_out(elem, doc):
+    if isinstance(elem, pf.Div) and 'cell' in elem.classes:
+        return [e for e in elem.content
+                if 'cell-code' in getattr(e, 'classes', [])]
 
 
-def strip_cells(elem, doc):
-    params = doc._wnb_params
-    if not isinstance(elem, (pf.Div, pf.Span)):
-        return
-    if (params['nb-strip-header-nos'] and
-        isinstance(elem, pf.Span) and
-        'header-section-number' in elem.classes):
-        return []
-    # Replace various containers with their contents.
-    if params['nb-flatten-divspans'].intersection(elem.classes):
-        return list(elem.content)
-    if 'callout-note' in elem.classes:
-        return filter_callout_note(elem)
-    # Drop cell div and all contents except code.
-    if 'cell' not in elem.classes:
-        return
-    return filter_out(elem)
+def strip_cells(nb_doc, params):
+    nb_doc._wnb_params = params
+    for f in (filter_strip_header_nos,
+              filter_flatten_divspans,
+              filter_callout_note_classic,
+              filter_cell_out):
+        nb_doc = nb_doc.walk(f)
+    return nb_doc
 
 
 def find_notebooks(elem):
@@ -185,8 +196,7 @@ def finalize(doc):
     if '*' not in build_formats and params['out_format'] not in build_formats:
         return
     for attrs, nb_doc in find_notebooks(doc):
-        nb_doc._wnb_params = params  # for strip_cells
-        nb_doc = nb_doc.walk(strip_cells)
+        nb_doc = strip_cells(nb_doc, params)
         write_notebook_files(nb_doc, {**attrs, **params})
 
 
