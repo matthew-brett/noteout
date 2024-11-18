@@ -52,7 +52,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install Package and test requirements
-        run: pip install ".[test]"
+        run: |
+          pip install ".[test]"
+          ipython kernel install --name "python3" --user
 
       - name: Run tests
         run: pytest tests

@@ -30,7 +30,8 @@ Homepage = "http://github.com/matthew-brett/noteout"
 test = [
     'pytest',
     'pandas',
-    'matplotlib'
+    'matplotlib',
+    'ipykernel'
 ]
 
 [project.scripts]
