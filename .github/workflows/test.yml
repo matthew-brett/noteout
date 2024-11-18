@@ -18,6 +18,10 @@ jobs:
       PANDOC_VER: "3.2"
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
       - uses: actions/cache@v4
         with:
           path: |
@@ -42,10 +46,6 @@ jobs:
           sudo dpkg --install quarto.deb pandoc.deb
           # Install Tex setup to build PDF.
           quarto install tinytex
-
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - uses: actions/setup-python@v5
         with:
