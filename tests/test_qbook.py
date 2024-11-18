@@ -17,7 +17,7 @@ import jupytext
 import panflute as pf
 
 
-QBOOK_PATH = Path(__file__).parent.joinpath('qbook')
+QBOOK_PATH = Path(__file__).parent.parent.joinpath('quarto-example')
 NB_ONLY_STR = 'This appears only in the notebook'
 NB_DIR = '.'
 
@@ -244,4 +244,4 @@ def test_nb_output(tmp_path):
 
 def test_pdf_smoke(tmpdir):
     params = make_new_book(tmpdir, 'Python', {}, formats=('pdf',))
-    assert Path(params['book_path'] / '_book' / 'qbook.pdf').is_file()
+    assert Path(params['book_path'] / '_book' / 'Quarto-example.pdf').is_file()

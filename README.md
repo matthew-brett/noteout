@@ -4,7 +4,7 @@ Pandoc filters for, among other things, extracting embedded notebooks,
 replacing with suitable link material.
 
 See the example [Quarto](https://quarto.org) book project in
-`src/noteout/tests/qbook` for a quickstart.
+`quarto-example` for a quickstart.
 
 If you are using these filters with Quarto, as we are, you will need Quarto >=
 1.4, because it has mechanisms to run filters at different stages of the
