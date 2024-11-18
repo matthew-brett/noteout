@@ -13,9 +13,10 @@ from pathlib import Path
 import shutil
 from zipfile import ZipFile
 
-import noteout.export_notebooks as enb
+from panflute import Doc, Header, Para, Str, Space, Div, Plain
 
-from noteout.nutils import filter_doc
+from noteout.nutils import filter_doc, fmt2fmt
+import noteout.export_notebooks as enb
 
 from .tutils import q2md, q2doc, fmt2md, filter_doc_nometa
 from . import test_mark_notebooks as tmnb
@@ -110,3 +111,54 @@ def test_no_output(in_tmp_path):
     filter_doc(in_doc, enb)
     assert out_nb_path.is_file()
     shutil.rmtree(nb_dir)
+
+
+def test_callout_note(in_tmp_path):
+    # Two callout outputs as of Quarto 1.6 or so.
+    # Copy-pasted from pf.debug output.
+    inp_doc = Doc(*[
+        Header(Str('Title'), level=1, identifier='title'),
+        Para(Str('Text')),
+        Div(
+            Div(Plain(Str('Heading')),
+                attributes={'__quarto_custom_scaffold': 'true'}),
+            Div(Para(Str('Callout'), Space, Str('text.')),
+                Para(Str('More'), Space, Str('callout'), Space, Str('text.')),
+                attributes={'__quarto_custom_scaffold': 'true'}),
+            attributes={'__quarto_custom': 'true',
+                        '__quarto_custom_type': 'Callout',
+                        '__quarto_custom_context': 'Block',
+                        '__quarto_custom_id': '1'}),
+        Div(
+            Div(attributes={'__quarto_custom_scaffold': 'true'}),
+            Div(Para(Str('No'), Space, Str('heading'),
+                     Space, Str('callout'), Space, Str('text.')),
+                attributes={'__quarto_custom_scaffold': 'true'}),
+            attributes={'__quarto_custom': 'true',
+                        '__quarto_custom_type': 'Callout',
+                        '__quarto_custom_context': 'Block',
+                        '__quarto_custom_id': '2'}),
+        Para(Str('Last'), Space, Str('text.'))
+    ])
+    out_doc = inp_doc.walk(enb.filter_callout_note_custom)
+    assert fmt2md(out_doc) == fmt2md('''\
+# Title
+
+Text
+
+**Note: Heading**
+
+Callout text.
+
+More callout text.
+
+**End of Note: Heading**
+
+**Note**
+
+No heading callout text.
+
+**End of Note**
+
+Last text.
+''')

@@ -95,6 +95,23 @@ def filter_callout_note_classic(elem, doc):
     )
 
 
+def filter_callout_note_custom(elem, doc):
+    if not isinstance(elem, pf.Div):
+        return
+    if not elem.attributes.get('__quarto_custom_type') == 'Callout':
+        return
+    assert elem.attributes.get('__quarto_custom') == 'true'
+    header, content = list(elem.content)
+    for e in (header, content):
+        assert isinstance(e, pf.Div)
+        assert e.attributes.get('__quarto_custom_scaffold') == 'true'
+    hdr_content = pf.stringify(header)
+    hdr_txt = ': ' + hdr_content if hdr_content else ''
+    return (pf.convert_text(f'**Note{hdr_txt}**') +
+            list(content.content) +
+            pf.convert_text(f'**End of Note{hdr_txt}**'))
+
+
 def filter_cell_out(elem, doc):
     if isinstance(elem, pf.Div) and 'cell' in elem.classes:
         return [e for e in elem.content
@@ -106,6 +123,7 @@ def strip_cells(nb_doc, params):
     for f in (filter_strip_header_nos,
               filter_flatten_divspans,
               filter_callout_note_classic,
+              filter_callout_note_custom,
               filter_cell_out):
         nb_doc = nb_doc.walk(f)
     return nb_doc
