@@ -3,6 +3,7 @@
 
 from os import listdir, unlink
 from pathlib import Path
+import re
 from subprocess import run
 from shutil import copytree, rmtree
 from glob import glob
@@ -248,13 +249,22 @@ def test_pdf_smoke(tmpdir):
     assert Path(params['book_path'] / '_book' / 'Quarto-example.pdf').is_file()
 
 
+def unresolved_refs(nb_file):
+    nb = jupytext.read(nb_file)
+    nb_rmd = jupytext.writes(nb, 'Rmd')
+    return re.findall('quarto-unresolved-ref', nb_rmd)
+
+
 def test_proc_nbs(tmp_path):
     params = make_new_book(tmp_path, 'Python', {}, formats=('html',))
     book_out = params['out_path'] / '_book'
     html_files = sorted(book_out.glob('**/*.html'))
+    nb_file = book_out / 'my_notebook.ipynb'
+    assert len(unresolved_refs(nb_file)) == 1
     assert len(html_files) == 4
     out_jl = tmp_path / 'jl_out'
     assert not out_jl.is_dir()
     nbp = NBProcessor(params['out_path'] / '_quarto.yml', out_jl)
     nbp.process()
     assert out_jl.is_dir()
+    assert len(unresolved_refs(nb_file)) == 0
