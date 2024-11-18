@@ -266,5 +266,8 @@ def test_proc_nbs(tmp_path):
     assert not out_jl.is_dir()
     nbp = NBProcessor(params['out_path'] / '_quarto.yml', out_jl)
     nbp.process()
-    assert out_jl.is_dir()
     assert len(unresolved_refs(nb_file)) == 0
+    assert (out_jl / 'jupyter-lite.json').is_file()
+    nb_paths = sorted(out_jl.glob('**/*.ipynb'))
+    assert len(nb_paths) == 1
+    assert len(unresolved_refs(nb_paths[0])) == 0
