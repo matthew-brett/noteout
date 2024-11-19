@@ -49,7 +49,7 @@ noteout:
   nb-format: ipynb
   interact-url: https://example.com?filepath=python-book/
   book-url-root: https://example.com
-  nb-dir: .
+  nb-dir: generated-notebooks
 
 processing:
   language: python
