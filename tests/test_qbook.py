@@ -10,6 +10,7 @@ from glob import glob
 from copy import deepcopy
 from collections.abc import Mapping
 from hashlib import sha1
+import shutil
 import json
 
 import yaml
@@ -21,36 +22,18 @@ from noteout.process_notebooks import NBProcessor
 
 QBOOK_PATH = Path(__file__).parent.parent.joinpath('quarto-example')
 NB_ONLY_STR = 'This appears only in the notebook'
-NB_DIR = '.'
 
 
-def get_yml_config(lang='Python'):
-    with open(QBOOK_PATH / '_quarto.yml', 'rt') as fobj:
-        config = yaml.load(fobj, Loader=yaml.SafeLoader)
+def get_yml_config(config_path, lang):
+    config = yaml.safe_load(config_path.read_text())
     is_r = lang == 'R'
     config['noteout'].update({
         'filter-divspans': ['python'] if is_r else ['r'],
         'nb-format': 'Rmd' if is_r else 'ipynb'})
+    if not 'processing' in config:
+        config['processing'] = {}
+    config['processing']['language'] = lang.lower()
     return config
-
-
-def copy_book_source(out_path):
-    copytree(QBOOK_PATH, out_path)
-    built_path = out_path / '_book'
-    if built_path.exists():
-        rmtree(built_path)
-    for fn in glob(str(out_path / 'meta*.json')):
-        unlink(fn)
-
-
-def make_book(out_path, yml_config, args=(),
-              formats=('html', 'pdf')
-             ):
-    copy_book_source(out_path)
-    with open(out_path / '_quarto.yml', 'wt') as fobj:
-        yaml.dump(yml_config, fobj)
-    extra = list(args) + ['--to=' + f for f in formats]
-    run(['quarto', 'render', '.'] + list(extra), cwd=out_path)
 
 
 def merge_dict(d1, d2):
@@ -67,15 +50,66 @@ def merge_dict(d1, d2):
     return out
 
 
-def make_book_lang(out_path, lang, extra_config=None,
-                   render_args=(), formats=('html',)):
-    out_yml = get_yml_config(lang)
-    if extra_config:
-        out_yml = merge_dict(out_yml, extra_config)
-    make_book(out_path, out_yml, args=render_args, formats=formats)
-    return dict(out_path=out_path,
-                config_yml=out_yml,
-                nb_ext='Rmd' if lang == 'R' else 'ipynb')
+class BookMaker:
+
+    source_path = QBOOK_PATH
+
+    def __init__(self, root_path,
+                 extra_config=None,
+                 lang='Python',
+                 name=None,
+                 args=(),
+                 formats=('html',)):
+        self.root_path = Path(root_path)
+        self.extra_config = extra_config if extra_config else {}
+        self.lang = lang
+        start_config = get_yml_config(self.source_path / '_quarto.yml',
+                                      self.lang)
+        self.yml_config = merge_dict(start_config, self.extra_config)
+        self.name = name if name else dicthash(self.yml_config)
+        self.args = args
+        self.formats = formats
+        self.book_path = self.root_path / self.name
+        self._nb_ext='Rmd' if lang == 'R' else 'ipynb'
+        self.nb = self.nb_parsed = {}
+
+    def get_book_source(self):
+        copytree(self.source_path, self.book_path)
+        with open(self.book_path / '_quarto.yml', 'wt') as fobj:
+            yaml.dump(self.yml_config, fobj)
+        built_path = self.book_path / '_book'
+        if built_path.exists():
+            rmtree(built_path)
+        for fn in glob(str(self.book_path / 'meta*.json')):
+            unlink(fn)
+        self.change_source()
+
+    def change_source(self):
+        pass
+
+    def make_book(self, clobber=True):
+        if self.book_path.is_dir():
+            if clobber:
+                shutil.rmtree(self.book_path)
+            else:
+                raise ValueError(f'{self.book_path} exists')
+        self.get_book_source()
+        extra = list(self.args) + ['--to=' + f for f in self.formats]
+        run(['quarto', 'render', '.'] + list(extra), cwd=self.book_path)
+        params = dict(book_path=self.book_path,
+                      config_yml=self.yml_config,
+                      nb_ext=self._nb_ext,
+                      nb={},
+                      nb_parsed={})
+        if 'html' not in self.formats:  # Only HTML copies notebook.
+            return params
+        nb_dir = self.yml_config['noteout'].get('nb-dir', 'notebooks')
+        self._nb, self._nb_parsed = read_notebook(
+            self.book_path / '_book' / nb_dir /
+            f'my_notebook.{self._nb_ext}')
+        params['nb'] = self._nb.copy()
+        params['nb_parsed'] = self._nb_parsed.copy()
+        return params
 
 
 def read_notebook(nb_fname):
@@ -102,24 +136,6 @@ def dicthash(d, **kwargs):
     return sha1(json.dumps(d).encode('latin1')).hexdigest()
 
 
-def make_new_book(tmp_path, lang, extra_config=None, formats=('html',)):
-    out_name = lang
-    if extra_config:
-        out_name += '_' + dicthash(extra_config)
-    book_path = tmp_path / out_name
-    assert not Path(book_path).exists()
-    params = make_book_lang(book_path, lang,
-                            extra_config=extra_config,
-                            formats=formats)
-    if 'html' in formats:  # Only HTML copies notebook.
-        nb, nb_parsed = read_notebook(book_path / '_book' / NB_DIR /
-                                      f'my_notebook.{params["nb_ext"]}')
-    else:
-        nb = nb_parsed = {}
-    params.update(dict(book_path=book_path, nb=nb, nb_parsed=nb_parsed))
-    return params
-
-
 def test_qbook_render(tmp_path):
     # Test qbook build.
     # Output from write_meta filter.
@@ -131,9 +147,7 @@ def test_qbook_render(tmp_path):
             extra_config['interact-url'] = (
                 'https://mybinder.org/v2/gh/resampling-stats/'
                 'resampling-with/gh-pages?filepath=python-book/')
-        params = make_new_book(tmp_path,
-                               lang,
-                               extra_config)
+        params = BookMaker(tmp_path, extra_config, lang).make_book()
         tmp_qbook = params['book_path']
         # Check meta files from write_meta
         source_listing = listdir(tmp_qbook)
@@ -189,7 +203,7 @@ def test_qbook_render(tmp_path):
 
 def test_nb_output(tmp_path):
     extra_config = {'noteout': {'nb-strip-header-nos': False}}
-    params = make_new_book(tmp_path, 'Python', extra_config)
+    params = BookMaker(tmp_path, extra_config).make_book()
     parsed = params['nb_parsed']
     # If we turn off header stripping, we get section no.
     assert parsed[1]['lines'] == [
@@ -202,7 +216,7 @@ def test_nb_output(tmp_path):
     # Turn off all container filtering.
     extra_config = {'noteout': {'nb-flatten-divspans': [],
                                 'nb-strip-header-nos': False}}
-    params = make_new_book(tmp_path, 'Python', extra_config)
+    params = BookMaker(tmp_path, extra_config).make_book()
     parsed = params['nb_parsed']
     # Check nothing is filtered, at a first pass, by checking
     # parts of the parsed first and last cells.
@@ -216,7 +230,7 @@ def test_nb_output(tmp_path):
     # Turn on maximal container filtering, retain header numbers.
     extra_config = {'noteout': {'nb-flatten-divspans': ['+', 'python'],
                                 'nb-strip-header-nos': False}}
-    params = make_new_book(tmp_path, 'Python', extra_config)
+    params = BookMaker(tmp_path, extra_config).make_book()
     parsed = params['nb_parsed']
     # Check everything is filtered.
     assert parsed[1]['types'] == [pf.Para, pf.Para, pf.Para, pf.Header]
@@ -230,7 +244,7 @@ def test_nb_output(tmp_path):
     # If we don't add the '+', we don't get header or nb-only flattening.
     extra_config = {'noteout': {'nb-flatten-divspans': ['python'],
                                 'nb-strip-header-nos': False}}
-    params = make_new_book(tmp_path, 'Python', extra_config)
+    params = BookMaker(tmp_path, extra_config).make_book()
     parsed = params['nb_parsed']
     # The nb only is not flattened
     assert parsed[1]['types'] == [pf.Div, pf.Para, pf.Div, pf.Header]
@@ -244,8 +258,8 @@ def test_nb_output(tmp_path):
             [pf.Span, pf.Space, pf.Str, pf.Space, pf.Str])
 
 
-def test_pdf_smoke(tmpdir):
-    params = make_new_book(tmpdir, 'Python', {}, formats=('pdf',))
+def test_pdf_smoke(tmp_path):
+    params = BookMaker(tmp_path, formats=('pdf',)).make_book()
     assert Path(params['book_path'] / '_book' / 'Quarto-example.pdf').is_file()
 
 
@@ -256,18 +270,64 @@ def unresolved_refs(nb_file):
 
 
 def test_proc_nbs(tmp_path):
-    params = make_new_book(tmp_path, 'Python', {}, formats=('html',))
-    book_out = params['out_path'] / '_book'
+    params = BookMaker(tmp_path).make_book()
+    book_out = params['book_path'] / '_book'
     html_files = sorted(book_out.glob('**/*.html'))
     nb_file = book_out / 'my_notebook.ipynb'
     assert len(unresolved_refs(nb_file)) == 1
     assert len(html_files) == 4
     out_jl = tmp_path / 'jl_out'
     assert not out_jl.is_dir()
-    nbp = NBProcessor(params['out_path'] / '_quarto.yml', out_jl)
+    nbp = NBProcessor(params['book_path'] / '_quarto.yml', out_jl)
     nbp.process()
     assert len(unresolved_refs(nb_file)) == 0
     assert (out_jl / 'jupyter-lite.json').is_file()
     nb_paths = sorted(out_jl.glob('**/*.ipynb'))
     assert len(nb_paths) == 1
     assert len(unresolved_refs(nb_paths[0])) == 0
+
+
+class MBookMaker(BookMaker):
+
+    def change_source(self):
+        (self.book_path / 'intro.Rmd').write_text('''\
+---
+title: "My Document"
+---
+
+# Introduction
+
+::: {.notebook name="my_notebook"}
+
+Here is a paragraph.
+
+::: {.callout-note}
+## Note heading
+
+Note text.
+:::
+
+Last text in notebook.
+:::
+
+Final text.
+''')
+
+
+def test_callout_note(tmp_path):
+    params = MBookMaker(tmp_path).make_book()
+    out = jupytext.writes(params['nb'], 'Rmd')
+    assert re.match(r'''# My notebook
+
+Find this notebook on the web at .*
+
+Here is a paragraph\.
+
+\*\*Note: Note heading\*\*
+
+Note text\.
+
+\*\*End of Note: Note heading\*\*
+
+Last text in notebook\.
+''', out, flags=re.MULTILINE | re.DOTALL)
