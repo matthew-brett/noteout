@@ -317,17 +317,11 @@ Final text.
 def test_callout_note(tmp_path):
     params = MBookMaker(tmp_path).make_book()
     out = jupytext.writes(params['nb'], 'Rmd')
-    assert re.match(r'''# My notebook
-
-Find this notebook on the web at .*
-
-Here is a paragraph\.
-
-\*\*Note: Note heading\*\*
-
-Note text\.
-
-\*\*End of Note: Note heading\*\*
-
-Last text in notebook\.
+    assert re.match(r'''# My notebook$\s+
+^Find this notebook on the web at.*?\s+
+^Here is a paragraph\.$\s+
+^\*\*Note: Note heading\*\*$\s+
+^Note text\.$\s+
+^\*\*End of Note: Note heading\*\*$\s+
+^Last text in notebook\.
 ''', out, flags=re.MULTILINE | re.DOTALL)
