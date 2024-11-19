@@ -372,6 +372,13 @@ Here is a paragraph.
 Note text.
 :::
 
+Between notes.
+
+::: {.callout-note}
+
+Note text without heading.
+:::
+
 Last text in notebook.
 :::
 
@@ -392,5 +399,9 @@ def test_callout_note(tmp_path):
 ^\*\*Note: Note heading\*\*$\s+
 ^Note text\.$\s+
 ^\*\*End of Note: Note heading\*\*$\s+
+^Between notes.$\s+
+^\*\*Note\*\*$\s+
+^Note text without heading\.$\s+
+^\*\*End of Note\*\*$\s+
 ^Last text in notebook\.
 ''', out, flags=re.MULTILINE | re.DOTALL)
