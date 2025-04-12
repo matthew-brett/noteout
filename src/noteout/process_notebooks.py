@@ -40,7 +40,7 @@ Notes on implementation
 Crossreferences
 +++++++++++++++
 
-Our problem is that we generate the notebooks before Quarto has resolve its
+Our problem is that we generate the notebooks before Quarto has resolved its
 cross-references.   For example, in the generated `sampling_tools.Rmd`
 notebook, we have the following ``quarto-unresolved-xref`` instances.  Here is
 the first::
